@@ -521,7 +521,7 @@ function renderPanel(data){
   set('pc-egr',fmt(c.totalEgresos));
   set('pc-egr2',c.totalIngresos>0?(c.totalEgresos/c.totalIngresos*100).toFixed(1)+'% sobre ingresos':'—');
   const efEl=document.getElementById('pc-ef');
-  efEl.textContent=paren(c.efectivo);
+  efEl.textContent=fmt(Math.abs(c.efectivo));
   efEl.className='kval '+(c.efectivo>=0?'pos':'neg');
   set('pc-ef2',c.totalEgresos>0?'déficit del '+(c.efectivo<0?Math.abs(c.efectivo/c.totalEgresos*100).toFixed(1)+'% sobre egresos':'—'):'—');
   set('pc-aportes',fmt(c.aportes));
@@ -550,12 +550,12 @@ function renderPanel(data){
 function renderPcCharts(data){
   const c=CALC;
   // Colores consistentes entre tortas
-  const COL_CMV='#C05050';   // rojo medio
-  const COL_CF='#8B2020';    // bordo oscuro
-  const COL_G='#D4846A';     // salmon
-  const COL_MB='#5A1010';    // bordo muy oscuro
-  const COL_MO='#3D0D0D';    // casi negro bordo
-  const COL_NETO='#7B1F1F';  // bordo
+  const COL_CV='#7B1F1F';    // bordo - costos variables (CMV)
+  const COL_CF='#B83030';    // rojo medio - costos fijos
+  const COL_G='#C05050';     // rojo claro - otros gastos
+  const COL_MB='#27633B';    // verde - margen bruto
+  const COL_MO='#27633B';    // verde - margen operativo
+  const COL_NETO='#27633B';  // verde - resultado neto
 
   // === GRÁFICO SEMANAL: ventas vs costos operativos ===
   const mp={};
@@ -570,13 +570,13 @@ function renderPcCharts(data){
   const costos=ks.map(k=>-Math.round(mp[k].co));   // negativos hacia abajo
   const resOp=ks.map((k,i)=>Math.round(ventas[i]+costos[i])); // ventas - costos
   // Chart options shared between weekly and monthly
-  const semOpts=(labels,v,co,ro)=>({
+  const semOpts=(labels,v,co,ro,wide=false)=>({
     type:'bar',
     data:{labels,datasets:[
       {label:'Ventas',data:v,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
+       stack:'s',order:2,barPercentage:wide?0.5:0.6,categoryPercentage:wide?0.6:0.8},
       {label:'Costos operativos',data:co,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
+       stack:'s',order:2,barPercentage:wide?0.5:0.6,categoryPercentage:wide?0.6:0.8},
       {label:'Resultado operativo',data:ro,type:'line',borderColor:'#1A5C96',
        backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:4,
        pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
@@ -603,25 +603,26 @@ function renderPcCharts(data){
   const mCostos=meses.map(m=>-Math.round(data.filter(r=>r.t==='E'&&(r.c==='CMV'||r.c==='CF')&&r.m===m).reduce((s,r)=>s+r.v,0)));
   const mResOp=meses.map((_,i)=>Math.round(mVentas[i]+mCostos[i]));
   dc('pc-mes');
-  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),semOpts(meses.map(m=>nomM[m]||'Mes '+m),mVentas,mCostos,mResOp));
+  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),semOpts(meses.map(m=>nomM[m]||'Mes '+m),mVentas,mCostos,mResOp,true));
 
   // === TORTA 1: Margen bruto vs CMV (sobre ventas) ===
   const v=c.ventas;
+  // Order: margin first (12 o'clock = rotation:-90deg), then CV, CF, G
   const pie1vals=[Math.max(0,c.margenBruto), c.cmv];
   const pie1lbl=['Margen bruto','Costos variables'];
-  const pie1col=[COL_MB, COL_CMV];
+  const pie1col=[COL_MB, COL_CV];
   makePcPie('pc-pie1',pie1vals,pie1lbl,pie1col,'pc-pie1-leg');
 
-  // === TORTA 2: Margen operativo, CF, CMV (sobre ventas) ===
-  const pie2vals=[Math.max(0,c.margenOp), c.cf, c.cmv];
-  const pie2lbl=['Margen operativo','Costos fijos','Costos variables'];
-  const pie2col=[COL_MO, COL_CF, COL_CMV];
+  // === TORTA 2: Margen operativo, CV, CF ===
+  const pie2vals=[Math.max(0,c.margenOp), c.cmv, c.cf];
+  const pie2lbl=['Margen operativo','Costos variables','Costos fijos'];
+  const pie2col=[COL_MO, COL_CV, COL_CF];
   makePcPie('pc-pie2',pie2vals,pie2lbl,pie2col,'pc-pie2-leg');
 
-  // === TORTA 3: Resultado neto, CMV, CF, otros gastos (sobre ingresos totales) ===
+  // === TORTA 3: Resultado neto, CV, CF, otros gastos ===
   const pie3vals=[Math.max(0,c.resultadoNeto), c.cmv, c.cf, c.g];
   const pie3lbl=['Resultado neto','Costos variables','Costos fijos','Otros gastos'];
-  const pie3col=[COL_NETO, COL_CMV, COL_CF, COL_G];
+  const pie3col=[COL_NETO, COL_CV, COL_CF, COL_G];
   makePcPie('pc-pie3',pie3vals,pie3lbl,pie3col,'pc-pie3-leg');
 }
 
@@ -631,7 +632,9 @@ function makePcPie(canvasId,vals,labels,colors,legId){
   CH[canvasId]=new Chart(document.getElementById(canvasId),{
     type:'doughnut',
     data:{labels,datasets:[{data:vals.map(v=>Math.round(Math.max(0,v))),backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'55%'}
+    options:{responsive:true,maintainAspectRatio:false,
+      rotation:-90,  // start from 12 o'clock
+      plugins:{legend:{display:false}},cutout:'55%'}
   });
   if(legId){
     document.getElementById(legId).innerHTML=labels.map((l,i)=>`
