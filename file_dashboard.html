@@ -366,7 +366,7 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
 let D=[];
 
 const SHEETS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
-const CSV_URL='https://corsproxy.io/?'+encodeURIComponent(SHEETS_URL);
+const CSV_URL='https://api.allorigins.win/raw?url='+encodeURIComponent(SHEETS_URL);
 
 function parseCSV(text){
   const lines=text.trim().split('\n');
@@ -828,10 +828,10 @@ async function init(){
     renderAll();
   }catch(err){
     hideLoading();
-    console.error('Error cargando datos:',err);
+    console.error('Error cargando datos:',err.message, err);
     const errBanner=document.createElement('div');
     errBanner.style.cssText='background:#B83030;color:#fff;text-align:center;padding:16px;font-size:13px;letter-spacing:1px;font-family:Barlow Condensed,sans-serif;text-transform:uppercase;';
-    errBanner.textContent='No se pudieron cargar los datos desde Google Sheets. Verificá la conexión o que la planilla esté publicada correctamente.';
+    errBanner.textContent='Error al cargar datos: '+err.message+'. Abrí la consola del navegador (F12) para más detalle.';
     document.querySelector('header').after(errBanner);
   }
 }
