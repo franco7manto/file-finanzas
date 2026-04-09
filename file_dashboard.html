@@ -41,13 +41,13 @@ header{background:var(--bordo);padding:0 2rem;display:flex;align-items:center;ju
 .kcard.cr::before{background:var(--red);}
 .kcard.ca::before{background:var(--amber);}
 .kcard.cb::before{background:var(--blue);}
-.klbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--tx3);margin-bottom:7px;}
+.klbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--tx2);margin-bottom:7px;}
 .kval{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1;}
 .kval.pos{color:var(--green);}
 .kval.neg{color:var(--red);}
 .kval.neu{color:var(--tx);}
 .kval.bor{color:var(--bordo);}
-.ksub{font-size:11px;color:var(--tx3);margin-top:4px;}
+.ksub{font-size:11px;color:var(--tx2);margin-top:4px;opacity:0.8;}
 /* CHART CARDS */
 .ccard{background:var(--card);border:1px solid var(--bord);border-radius:3px;padding:1.4rem 1.6rem;margin-bottom:16px;}
 .ctitle{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--bord);}
@@ -146,16 +146,16 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
   <div class="kgrid" id="pc-row1">
     <div class="kcard cg"><div class="klbl">Ingresos totales</div><div class="kval pos" id="pc-ing">—</div><div class="ksub" id="pc-ing2">—</div></div>
     <div class="kcard cr"><div class="klbl">Egresos totales</div><div class="kval neg" id="pc-egr">—</div><div class="ksub" id="pc-egr2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Resultado neto</div><div class="kval" id="pc-neto">—</div><div class="ksub" id="pc-neto2">—</div></div>
-    <div class="kcard cg"><div class="klbl">Margen bruto</div><div class="kval pos" id="pc-mb">—</div><div class="ksub" id="pc-mb2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Margen operativo</div><div class="kval" id="pc-mo">—</div><div class="ksub" id="pc-mo2">—</div></div>
+    <div class="kcard cb"><div class="klbl">Efectivo total</div><div class="kval" id="pc-ef">—</div><div class="ksub" id="pc-ef2">—</div></div>
+    <div class="kcard ca"><div class="klbl">Aportes</div><div class="kval" id="pc-aportes">—</div><div class="ksub" id="pc-aportes2">—</div></div>
+    <div class="kcard cr"><div class="klbl">Retiros</div><div class="kval neg" id="pc-retiros">—</div><div class="ksub" id="pc-retiros2">—</div></div>
   </div>
   <div class="kgrid2">
-    <div class="kcard cb"><div class="klbl">Efectivo total</div><div class="kval" id="pc-ef">—</div><div class="ksub">Resultado Neto − Aportes + Retiros</div></div>
-    <div class="kcard"><div class="klbl">Costo Variable Unitario</div><div class="kval bor" id="pc-cvu">—</div><div class="ksub">promedio por transacción</div></div>
-    <div class="kcard"><div class="klbl">Margen Bruto %</div><div class="kval bor" id="pc-mbp">—</div><div class="ksub">sobre ventas</div></div>
-    <div class="kcard cr"><div class="klbl">Aportes</div><div class="kval neg" id="pc-aportes">—</div><div class="ksub" id="pc-aportes2">—</div></div>
-    <div class="kcard cr"><div class="klbl">Retiros</div><div class="kval neg" id="pc-retiros">—</div><div class="ksub" id="pc-retiros2">—</div></div>
+    <div class="kcard cg"><div class="klbl">Ventas</div><div class="kval pos" id="pc-ventas">—</div><div class="ksub" id="pc-ventas2">—</div></div>
+    <div class="kcard cr"><div class="klbl">Costos operativos</div><div class="kval neg" id="pc-costos">—</div><div class="ksub" id="pc-costos2">—</div></div>
+    <div class="kcard cg"><div class="klbl">Margen bruto</div><div class="kval" id="pc-mb">—</div><div class="ksub" id="pc-mb2">—</div></div>
+    <div class="kcard ca"><div class="klbl">Margen operativo</div><div class="kval" id="pc-mo">—</div><div class="ksub" id="pc-mo2">—</div></div>
+    <div class="kcard ca"><div class="klbl">Resultado neto</div><div class="kval" id="pc-neto">—</div><div class="ksub" id="pc-neto2">—</div></div>
   </div>
   <div class="cgrid2">
     <div class="ccard">
@@ -491,28 +491,35 @@ function renderAll(){
 function renderPanel(data){
   const c=CALC;
   const pct=v=>c.ventas>0?(v/c.ventas*100).toFixed(1)+'%':'—';
+  // Fila 1
   set('pc-ing',fmt(c.totalIngresos));
-  set('pc-ing2',data.filter(r=>r.t==='I').length+' transacciones');
+  set('pc-ing2',c.totalIngresos>0?(c.ventas/c.totalIngresos*100).toFixed(1)+'% son ventas':'—');
   set('pc-egr',fmt(c.totalEgresos));
-  set('pc-egr2',c.totalIngresos>0?(c.totalEgresos/c.totalIngresos*100).toFixed(1)+'% sobre ingresos totales':'—');
+  set('pc-egr2',c.totalIngresos>0?(c.totalEgresos/c.totalIngresos*100).toFixed(1)+'% sobre ingresos':'—');
+  const efEl=document.getElementById('pc-ef');
+  efEl.textContent=paren(c.efectivo);
+  efEl.className='kval '+(c.efectivo>=0?'pos':'neg');
+  set('pc-ef2',c.totalEgresos>0?'déficit del '+(c.efectivo<0?Math.abs(c.efectivo/c.totalEgresos*100).toFixed(1)+'% sobre egresos':'—'):'—');
+  set('pc-aportes',fmt(c.aportes));
+  set('pc-aportes2',c.totalIngresos>0?(c.aportes/c.totalIngresos*100).toFixed(1)+'% de ingresos':'—');
+  set('pc-retiros',fmt(c.retiros));
+  set('pc-retiros2',c.totalEgresos>0?(c.retiros/c.totalEgresos*100).toFixed(1)+'% de egresos':'—');
+  // Fila 2
+  set('pc-ventas',fmt(c.ventas));
+  set('pc-ventas2',data.filter(r=>r.t==='I'&&r.c==='V').length+' transacciones');
+  const costoOp=c.cmv+c.cf;
+  set('pc-costos',fmt(costoOp));
+  set('pc-costos2',c.ventas>0?(costoOp/c.ventas*100).toFixed(1)+'% sobre ventas':'—');
+  set('pc-mb',paren(c.margenBruto));
+  document.getElementById('pc-mb').className='kval '+(c.margenBruto>=0?'pos':'neg');
+  set('pc-mb2',(c.margenBruto>=0?'superávit':'déficit')+' · '+pct(c.margenBruto)+' s/ventas');
+  set('pc-mo',paren(c.margenOp));
+  document.getElementById('pc-mo').className='kval '+(c.margenOp>=0?'pos':'neg');
+  set('pc-mo2',(c.margenOp>=0?'superávit':'déficit')+' · '+pct(c.margenOp)+' s/ventas');
   const netoEl=document.getElementById('pc-neto');
   netoEl.textContent=paren(c.resultadoNeto);
   netoEl.className='kval '+(c.resultadoNeto>=0?'pos':'neg');
-  set('pc-neto2',(c.resultadoNeto>=0?'superávit':'déficit')+' — '+pct(c.resultadoNeto)+' s/ventas');
-  set('pc-mb',paren(c.margenBruto));
-  document.getElementById('pc-mb').className='kval '+(c.margenBruto>=0?'pos':'neg');
-  set('pc-mb2',pct(c.margenBruto)+' sobre ventas');
-  set('pc-mo',paren(c.margenOp));
-  document.getElementById('pc-mo').className='kval '+(c.margenOp>=0?'pos':'neg');
-  set('pc-mo2',pct(c.margenOp)+' sobre ventas');
-  set('pc-ef',paren(c.efectivo));
-  document.getElementById('pc-ef').className='kval '+(c.efectivo>=0?'pos':'neg');
-  set('pc-cvu',fmt(c.cvu));
-  set('pc-mbp',(c.ventas>0?(c.margenBruto/c.ventas*100).toFixed(1):0)+'%');
-  set('pc-aportes',paren(-c.aportes));
-  set('pc-aportes2','ingresos patrimoniales');
-  set('pc-retiros',paren(-c.retiros));
-  set('pc-retiros2','retiros y gastos personales');
+  set('pc-neto2',(c.resultadoNeto>=0?'superávit':'déficit')+' · '+pct(c.resultadoNeto)+' s/ventas');
   renderPcCharts(data);
 }
 
