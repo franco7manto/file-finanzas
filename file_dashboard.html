@@ -365,8 +365,7 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
 // ===== DATA =====
 let D=[];
 
-const SHEETS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
-const CSV_URL='https://api.allorigins.win/raw?url='+encodeURIComponent(SHEETS_URL);
+const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
 
 function parseCSV(text){
   const lines=text.trim().split('\n');
@@ -812,7 +811,7 @@ function hideLoading(){
 async function init(){
   showLoading('Cargando datos desde Google Sheets...');
   try{
-    const res=await fetch(CSV_URL);
+    const res=await fetch(CSV_URL+'&t='+Date.now(),{mode:'cors',credentials:'omit'});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     D=parseCSV(text);
