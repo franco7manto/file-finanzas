@@ -390,7 +390,8 @@ function parseCSV(text){
     let montoStr=cols[3].replace(/"/g,'').trim();
     let negativo=false;
     if(montoStr.startsWith('(')&&montoStr.endsWith(')')){negativo=true;montoStr=montoStr.slice(1,-1);}
-    montoStr=montoStr.replace(/\./g,'').replace(',','.');
+    // Formato inglés: coma = miles, punto = decimal -> quitar comas, mantener punto
+    montoStr=montoStr.replace(/,/g,'');
     let monto=parseFloat(montoStr)||0;
     if(negativo)monto=-Math.abs(monto);
     const tipo=cols[4].replace(/"/g,'').trim(); // "Ingreso" o "Egreso"
