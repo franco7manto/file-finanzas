@@ -41,6 +41,7 @@ header{background:var(--bordo);padding:0 2rem;display:flex;align-items:center;ju
 .kcard.cr::before{background:var(--red);}
 .kcard.ca::before{background:var(--amber);}
 .kcard.cb::before{background:var(--blue);}
+.kcard.cn::before{background:var(--tx2);}
 .klbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--tx2);margin-bottom:7px;}
 .kval{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1;}
 .kval.pos{color:var(--green);}
@@ -50,7 +51,7 @@ header{background:var(--bordo);padding:0 2rem;display:flex;align-items:center;ju
 .ksub{font-size:11px;color:var(--tx2);margin-top:4px;opacity:0.8;}
 /* CHART CARDS */
 .ccard{background:var(--card);border:1px solid var(--bord);border-radius:3px;padding:1.4rem 1.6rem;margin-bottom:16px;}
-.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--bord);}
+.ctitle{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--bord);}
 .cgrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .cgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
 .cgrid21{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
@@ -146,31 +147,43 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
   <div class="kgrid" id="pc-row1">
     <div class="kcard cg"><div class="klbl">Ingresos totales</div><div class="kval pos" id="pc-ing">—</div><div class="ksub" id="pc-ing2">—</div></div>
     <div class="kcard cr"><div class="klbl">Egresos totales</div><div class="kval neg" id="pc-egr">—</div><div class="ksub" id="pc-egr2">—</div></div>
-    <div class="kcard cb"><div class="klbl">Efectivo total</div><div class="kval" id="pc-ef">—</div><div class="ksub" id="pc-ef2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Aportes</div><div class="kval" id="pc-aportes">—</div><div class="ksub" id="pc-aportes2">—</div></div>
-    <div class="kcard cr"><div class="klbl">Retiros</div><div class="kval neg" id="pc-retiros">—</div><div class="ksub" id="pc-retiros2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Efectivo total</div><div class="kval" id="pc-ef">—</div><div class="ksub" id="pc-ef2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Aportes</div><div class="kval" id="pc-aportes">—</div><div class="ksub" id="pc-aportes2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Retiros</div><div class="kval" id="pc-retiros">—</div><div class="ksub" id="pc-retiros2">—</div></div>
   </div>
   <div class="kgrid2">
     <div class="kcard cg"><div class="klbl">Ventas</div><div class="kval pos" id="pc-ventas">—</div><div class="ksub" id="pc-ventas2">—</div></div>
     <div class="kcard cr"><div class="klbl">Costos operativos</div><div class="kval neg" id="pc-costos">—</div><div class="ksub" id="pc-costos2">—</div></div>
-    <div class="kcard cg"><div class="klbl">Margen bruto</div><div class="kval" id="pc-mb">—</div><div class="ksub" id="pc-mb2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Margen operativo</div><div class="kval" id="pc-mo">—</div><div class="ksub" id="pc-mo2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Resultado neto</div><div class="kval" id="pc-neto">—</div><div class="ksub" id="pc-neto2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Margen bruto</div><div class="kval" id="pc-mb">—</div><div class="ksub" id="pc-mb2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Margen operativo</div><div class="kval" id="pc-mo">—</div><div class="ksub" id="pc-mo2">—</div></div>
+    <div class="kcard cn"><div class="klbl">Resultado neto</div><div class="kval" id="pc-neto">—</div><div class="ksub" id="pc-neto2">—</div></div>
   </div>
-  <div class="cgrid2">
-    <div class="ccard">
-      <div class="ctitle">Flujo semanal — Ingresos vs Egresos</div>
-      <div class="legrow">
-        <span class="legitem"><span class="legdot" style="background:#27633B"></span>Ingresos</span>
-        <span class="legitem"><span class="legdot" style="background:#B83030"></span>Egresos</span>
-        <span class="legitem"><span class="legdot" style="background:rgba(123,31,31,0.5)"></span>Neto</span>
-      </div>
-      <div style="position:relative;height:240px"><canvas id="pc-chart-sem" role="img" aria-label="Flujo semanal"></canvas></div>
+  <!-- Gráfico semanal full width -->
+  <div class="ccard" style="margin-bottom:16px">
+    <div class="ctitle">Resultado semanal — Ventas vs Costos operativos</div>
+    <div class="legrow">
+      <span class="legitem"><span class="legdot" style="background:#27633B"></span>Ventas</span>
+      <span class="legitem"><span class="legdot" style="background:#B83030"></span>Costos operativos</span>
+      <span class="legitem"><span class="legdot" style="background:#1A5C96;width:18px;height:3px;border-radius:2px;margin-top:2px"></span>Resultado operativo</span>
     </div>
-    <div class="ccard">
-      <div class="ctitle">Composición de egresos</div>
-      <div style="position:relative;height:180px;margin-bottom:10px"><canvas id="pc-chart-donut" role="img" aria-label="Composición egresos"></canvas></div>
-      <div id="pc-donut-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:8px;"></div>
+    <div style="position:relative;height:260px"><canvas id="pc-chart-sem" role="img" aria-label="Resultado semanal ventas vs costos"></canvas></div>
+  </div>
+  <!-- 3 tortas de márgenes -->
+  <div class="cgrid3">
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Margen bruto vs CMV</div>
+      <div style="position:relative;height:170px"><canvas id="pc-pie1" role="img" aria-label="Margen bruto vs CMV"></canvas></div>
+      <div id="pc-pie1-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
+    </div>
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Margen operativo, CF y CMV</div>
+      <div style="position:relative;height:170px"><canvas id="pc-pie2" role="img" aria-label="Margen operativo, costos fijos y CMV"></canvas></div>
+      <div id="pc-pie2-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
+    </div>
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Resultado neto, CMV, CF y otros gastos</div>
+      <div style="position:relative;height:170px"><canvas id="pc-pie3" role="img" aria-label="Resultado neto sobre ingresos totales"></canvas></div>
+      <div id="pc-pie3-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
     </div>
   </div>
 </div>
@@ -524,32 +537,79 @@ function renderPanel(data){
 }
 
 function renderPcCharts(data){
-  // Semanal
+  const c=CALC;
+  // Colores consistentes entre tortas
+  const COL_CMV='#C05050';   // rojo medio
+  const COL_CF='#8B2020';    // bordo oscuro
+  const COL_G='#D4846A';     // salmon
+  const COL_MB='#5A1010';    // bordo muy oscuro
+  const COL_MO='#3D0D0D';    // casi negro bordo
+  const COL_NETO='#7B1F1F';  // bordo
+
+  // === GRÁFICO SEMANAL: ventas vs costos operativos ===
   const mp={};
-  data.forEach(r=>{const k='S'+r.s;if(!mp[k])mp[k]={i:0,e:0};if(r.t==='I')mp[k].i+=r.v;else mp[k].e+=Math.abs(r.v);});
+  data.forEach(r=>{
+    const k='S'+r.s;
+    if(!mp[k])mp[k]={v:0,co:0};
+    if(r.t==='I'&&r.c==='V') mp[k].v+=r.v;
+    else if(r.t==='E'&&(r.c==='CMV'||r.c==='CF')) mp[k].co+=Math.abs(r.v);
+  });
   const ks=Object.keys(mp).sort((a,b)=>+a.slice(1)-+b.slice(1));
-  const ing=ks.map(k=>Math.round(mp[k].i));
-  const egr=ks.map(k=>Math.round(mp[k].e));
-  const net=ks.map((_,i)=>Math.round(ing[i]-egr[i]));
+  const ventas=ks.map(k=>Math.round(mp[k].v));
+  const costos=ks.map(k=>-Math.round(mp[k].co));   // negativos hacia abajo
+  const resOp=ks.map((k,i)=>Math.round(ventas[i]+costos[i])); // ventas - costos
   dc('pc-sem');
-  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),{type:'bar',data:{labels:ks,datasets:[
-    {label:'Ingresos',data:ing,backgroundColor:'#27633B',borderRadius:2},
-    {label:'Egresos',data:egr,backgroundColor:'#B83030',borderRadius:2},
-    {label:'Neto',data:net,type:'line',borderColor:'rgba(123,31,31,0.7)',backgroundColor:'rgba(123,31,31,0.08)',borderWidth:2,pointRadius:3,fill:false,tension:0.3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-    scales:{x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
-      y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}}}});
-  // Donut
-  const cats={CMV:0,CF:0,PN:0,G:0};
-  data.filter(r=>r.t==='E').forEach(r=>{if(cats[r.c]!==undefined)cats[r.c]+=Math.abs(r.v);});
-  const lbl=['CMV','CF','PN','G'],val=[cats.CMV,cats.CF,cats.PN,cats.G];
-  const col=['#B83030','#1A5C96','#6B5B4E','#27633B'];
-  const tot=val.reduce((a,b)=>a+b,0);
-  dc('pc-donut');
-  CH['pc-donut']=new Chart(document.getElementById('pc-chart-donut'),{type:'doughnut',data:{labels:lbl,datasets:[{data:val,backgroundColor:col,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}});
-  document.getElementById('pc-donut-leg').innerHTML=lbl.map((l,i)=>`
-    <span class="legitem"><span class="legdot" style="background:${col[i]}"></span>${l} ${tot>0?Math.round(val[i]/tot*100):0}%</span>`).join('');
+  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),{
+    type:'bar',
+    data:{labels:ks,datasets:[
+      {label:'Ventas',data:ventas,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,order:2},
+      {label:'Costos operativos',data:costos,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,order:2},
+      {label:'Resultado operativo',data:resOp,type:'line',borderColor:'#1A5C96',backgroundColor:'rgba(26,92,150,0.08)',
+       borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
+      scales:{
+        x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'},
+          afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.1;axis.min-=m;axis.max+=m;}}
+      }
+    }
+  });
+
+  // === TORTA 1: Margen bruto vs CMV (sobre ventas) ===
+  const v=c.ventas;
+  const pie1vals=[Math.max(0,c.margenBruto), c.cmv];
+  const pie1lbl=['Márgen bruto','CMV'];
+  const pie1col=[COL_MB, COL_CMV];
+  makePcPie('pc-pie1',pie1vals,pie1lbl,pie1col,'pc-pie1-leg');
+
+  // === TORTA 2: Margen operativo, CF, CMV (sobre ventas) ===
+  const pie2vals=[Math.max(0,c.margenOp), c.cf, c.cmv];
+  const pie2lbl=['Márgen operativo','Costos fijos','CMV'];
+  const pie2col=[COL_MO, COL_CF, COL_CMV];
+  makePcPie('pc-pie2',pie2vals,pie2lbl,pie2col,'pc-pie2-leg');
+
+  // === TORTA 3: Resultado neto, CMV, CF, otros gastos (sobre ingresos totales) ===
+  const pie3vals=[Math.max(0,c.resultadoNeto), c.cmv, c.cf, c.g];
+  const pie3lbl=['Resultado neto','CMV','Costos fijos','Otros gastos'];
+  const pie3col=[COL_NETO, COL_CMV, COL_CF, COL_G];
+  makePcPie('pc-pie3',pie3vals,pie3lbl,pie3col,'pc-pie3-leg');
+}
+
+function makePcPie(canvasId,vals,labels,colors,legId){
+  dc(canvasId);
+  const tot=vals.reduce((a,b)=>a+Math.max(0,b),0);
+  CH[canvasId]=new Chart(document.getElementById(canvasId),{
+    type:'doughnut',
+    data:{labels,datasets:[{data:vals.map(v=>Math.round(Math.max(0,v))),backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'55%'}
+  });
+  if(legId){
+    document.getElementById(legId).innerHTML=labels.map((l,i)=>`
+      <span class="legitem"><span class="legdot" style="background:${colors[i]}"></span>${l} ${tot>0?Math.round(Math.max(0,vals[i])/tot*100):0}%</span>`).join('');
+  }
 }
 
 // ===== TAB 2: FLUJO =====
