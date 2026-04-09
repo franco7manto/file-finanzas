@@ -492,9 +492,9 @@ function renderPanel(data){
   const c=CALC;
   const pct=v=>c.ventas>0?(v/c.ventas*100).toFixed(1)+'%':'—';
   set('pc-ing',fmt(c.totalIngresos));
-  set('pc-ing2',fmt(c.ventas)+' ventas + '+fmt(c.oi)+' otros');
-  set('pc-egr',paren(-c.totalEgresos));
-  set('pc-egr2',data.filter(r=>r.t==='E').length+' transacciones');
+  set('pc-ing2',data.filter(r=>r.t==='I').length+' transacciones');
+  set('pc-egr',fmt(c.totalEgresos));
+  set('pc-egr2',c.totalIngresos>0?(c.totalEgresos/c.totalIngresos*100).toFixed(1)+'% sobre ingresos totales':'—');
   const netoEl=document.getElementById('pc-neto');
   netoEl.textContent=paren(c.resultadoNeto);
   netoEl.className='kval '+(c.resultadoNeto>=0?'pos':'neg');
