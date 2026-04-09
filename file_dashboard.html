@@ -365,7 +365,8 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
 // ===== DATA =====
 let D=[];
 
-const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
+const SHEETS_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
+const CSV_URL='https://corsproxy.io/?'+encodeURIComponent(SHEETS_URL);
 
 function parseCSV(text){
   const lines=text.trim().split('\n');
