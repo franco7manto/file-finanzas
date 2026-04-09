@@ -42,7 +42,7 @@ header{background:var(--bordo);padding:0 2rem;display:flex;align-items:center;ju
 .kcard.ca::before{background:var(--amber);}
 .kcard.cb::before{background:var(--blue);}
 .kcard.cn::before{background:var(--tx2);}
-.klbl{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--tx2);margin-bottom:7px;}
+.klbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx2);margin-bottom:7px;}
 .kval{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1;}
 .kval.pos{color:var(--green);}
 .kval.neg{color:var(--red);}
@@ -158,30 +158,41 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
     <div class="kcard cn"><div class="klbl">Margen operativo</div><div class="kval" id="pc-mo">—</div><div class="ksub" id="pc-mo2">—</div></div>
     <div class="kcard cn"><div class="klbl">Resultado neto</div><div class="kval" id="pc-neto">—</div><div class="ksub" id="pc-neto2">—</div></div>
   </div>
-  <!-- Gráfico semanal full width -->
-  <div class="ccard" style="margin-bottom:16px">
-    <div class="ctitle">Resultado semanal — Ventas vs Costos operativos</div>
-    <div class="legrow">
-      <span class="legitem"><span class="legdot" style="background:#27633B"></span>Ventas</span>
-      <span class="legitem"><span class="legdot" style="background:#B83030"></span>Costos operativos</span>
-      <span class="legitem"><span class="legdot" style="background:#1A5C96;width:18px;height:3px;border-radius:2px;margin-top:2px"></span>Resultado operativo</span>
+  <!-- Graficos semanales y mensuales -->
+  <div class="cgrid2" style="margin-bottom:16px">
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Resultado semanal</div>
+      <div class="legrow">
+        <span class="legitem"><span class="legdot" style="background:#27633B"></span>Ventas</span>
+        <span class="legitem"><span class="legdot" style="background:#B83030"></span>Costos operativos</span>
+        <span class="legitem"><span class="legdot" style="background:#1A5C96;width:18px;height:3px;border-radius:2px;margin-top:2px"></span>Resultado operativo</span>
+      </div>
+      <div style="position:relative;height:240px"><canvas id="pc-chart-sem" role="img" aria-label="Resultado semanal ventas vs costos"></canvas></div>
     </div>
-    <div style="position:relative;height:260px"><canvas id="pc-chart-sem" role="img" aria-label="Resultado semanal ventas vs costos"></canvas></div>
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Resultado mensual</div>
+      <div class="legrow">
+        <span class="legitem"><span class="legdot" style="background:#27633B"></span>Ventas</span>
+        <span class="legitem"><span class="legdot" style="background:#B83030"></span>Costos operativos</span>
+        <span class="legitem"><span class="legdot" style="background:#1A5C96;width:18px;height:3px;border-radius:2px;margin-top:2px"></span>Resultado operativo</span>
+      </div>
+      <div style="position:relative;height:240px"><canvas id="pc-chart-mes" role="img" aria-label="Resultado mensual ventas vs costos"></canvas></div>
+    </div>
   </div>
-  <!-- 3 tortas de márgenes -->
+  <!-- 3 tortas de margenes -->
   <div class="cgrid3">
     <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Margen bruto vs CMV</div>
-      <div style="position:relative;height:170px"><canvas id="pc-pie1" role="img" aria-label="Margen bruto vs CMV"></canvas></div>
+      <div class="ctitle">Margen Bruto</div>
+      <div style="position:relative;height:170px"><canvas id="pc-pie1" role="img" aria-label="Margen bruto vs costos variables"></canvas></div>
       <div id="pc-pie1-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
     </div>
     <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Margen operativo, CF y CMV</div>
-      <div style="position:relative;height:170px"><canvas id="pc-pie2" role="img" aria-label="Margen operativo, costos fijos y CMV"></canvas></div>
+      <div class="ctitle">Margen Operativo</div>
+      <div style="position:relative;height:170px"><canvas id="pc-pie2" role="img" aria-label="Margen operativo, costos fijos y costos variables"></canvas></div>
       <div id="pc-pie2-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
     </div>
     <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Resultado neto, CMV, CF y otros gastos</div>
+      <div class="ctitle">Margen Neto</div>
       <div style="position:relative;height:170px"><canvas id="pc-pie3" role="img" aria-label="Resultado neto sobre ingresos totales"></canvas></div>
       <div id="pc-pie3-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
     </div>
@@ -350,8 +361,8 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
       </div>
     </div>
   </div>
-  <!-- Mini pie márgenes -->
-  <div class="divider" style="margin-top:1.5rem">Márgenes</div>
+  <!-- Mini pie margenes -->
+  <div class="divider" style="margin-top:1.5rem">Margenes</div>
   <div class="mini-pie-row">
     <div class="mini-pie-card">
       <div class="ctitle" style="margin-bottom:.7rem">Margen bruto vs CMV</div>
@@ -558,42 +569,58 @@ function renderPcCharts(data){
   const ventas=ks.map(k=>Math.round(mp[k].v));
   const costos=ks.map(k=>-Math.round(mp[k].co));   // negativos hacia abajo
   const resOp=ks.map((k,i)=>Math.round(ventas[i]+costos[i])); // ventas - costos
-  dc('pc-sem');
-  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),{
+  // Chart options shared between weekly and monthly
+  const semOpts=(labels,v,co,ro)=>({
     type:'bar',
-    data:{labels:ks,datasets:[
-      {label:'Ventas',data:ventas,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,order:2},
-      {label:'Costos operativos',data:costos,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,order:2},
-      {label:'Resultado operativo',data:resOp,type:'line',borderColor:'#1A5C96',backgroundColor:'rgba(26,92,150,0.08)',
-       borderWidth:2.5,pointRadius:4,pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
+    data:{labels,datasets:[
+      {label:'Ventas',data:v,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
+       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
+      {label:'Costos operativos',data:co,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
+       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
+      {label:'Resultado operativo',data:ro,type:'line',borderColor:'#1A5C96',
+       backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:4,
+       pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
     ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:false},
         tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
       scales:{
         x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'},
-          afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.1;axis.min-=m;axis.max+=m;}}
+        y:{stacked:false,ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
+          grid:{color:'rgba(0,0,0,0.05)'},
+          afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=m;axis.max+=m;}}
       }
     }
   });
 
+  dc('pc-sem');
+  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),semOpts(ks,ventas,costos,resOp));
+
+  // === GRAFICO MENSUAL ===
+  const meses=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
+  const nomM={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
+  const mVentas=meses.map(m=>Math.round(data.filter(r=>r.t==='I'&&r.c==='V'&&r.m===m).reduce((s,r)=>s+r.v,0)));
+  const mCostos=meses.map(m=>-Math.round(data.filter(r=>r.t==='E'&&(r.c==='CMV'||r.c==='CF')&&r.m===m).reduce((s,r)=>s+r.v,0)));
+  const mResOp=meses.map((_,i)=>Math.round(mVentas[i]+mCostos[i]));
+  dc('pc-mes');
+  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),semOpts(meses.map(m=>nomM[m]||'Mes '+m),mVentas,mCostos,mResOp));
+
   // === TORTA 1: Margen bruto vs CMV (sobre ventas) ===
   const v=c.ventas;
   const pie1vals=[Math.max(0,c.margenBruto), c.cmv];
-  const pie1lbl=['Márgen bruto','CMV'];
+  const pie1lbl=['Margen bruto','Costos variables'];
   const pie1col=[COL_MB, COL_CMV];
   makePcPie('pc-pie1',pie1vals,pie1lbl,pie1col,'pc-pie1-leg');
 
   // === TORTA 2: Margen operativo, CF, CMV (sobre ventas) ===
   const pie2vals=[Math.max(0,c.margenOp), c.cf, c.cmv];
-  const pie2lbl=['Márgen operativo','Costos fijos','CMV'];
+  const pie2lbl=['Margen operativo','Costos fijos','Costos variables'];
   const pie2col=[COL_MO, COL_CF, COL_CMV];
   makePcPie('pc-pie2',pie2vals,pie2lbl,pie2col,'pc-pie2-leg');
 
   // === TORTA 3: Resultado neto, CMV, CF, otros gastos (sobre ingresos totales) ===
   const pie3vals=[Math.max(0,c.resultadoNeto), c.cmv, c.cf, c.g];
-  const pie3lbl=['Resultado neto','CMV','Costos fijos','Otros gastos'];
+  const pie3lbl=['Resultado neto','Costos variables','Costos fijos','Otros gastos'];
   const pie3col=[COL_NETO, COL_CMV, COL_CF, COL_G];
   makePcPie('pc-pie3',pie3vals,pie3lbl,pie3col,'pc-pie3-leg');
 }
@@ -824,7 +851,7 @@ function renderCostos(data){
   const cvEntries=Object.entries(subCV).sort((a,b)=>b[1]-a[1]);
   const cvCols=['#7B1F1F','#B83030','#C05050','#9A6010','#1A5C96','#27633B'];
   makePie('co-pie-cv',cvEntries.map(e=>e[1]),cvEntries.map(e=>e[0]),cvCols,'co-pie-cv-leg');
-  // Mini pies márgenes
+  // Mini pies margenes
   const tot=c.ventas;
   makeMiniPie('co-pie-m1',[Math.max(0,c.margenBruto),c.cmv],['Mg. Bruto','CMV'],['#27633B','#B83030'],'co-pie-m1-leg');
   makeMiniPie('co-pie-m2',[Math.max(0,c.margenOp),c.cf,c.cmv],['Mg. Operativo','CF','CMV'],['#27633B','#1A5C96','#B83030'],'co-pie-m2-leg');
