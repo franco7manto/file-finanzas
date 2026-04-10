@@ -599,7 +599,7 @@ function renderPcCharts(data){
   const meses=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
   const nomM={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
   const mVentas=meses.map(m=>Math.round(data.filter(r=>r.t==='I'&&r.c==='V'&&r.m===m).reduce((s,r)=>s+r.v,0)));
-  const mCostos=meses.map(m=>-Math.round(data.filter(r=>r.t==='E'&&(r.c==='CMV'||r.c==='CF')&&r.m===m).reduce((s,r)=>s+r.v,0)));
+  const mCostos=meses.map(m=>-Math.round(Math.abs(data.filter(r=>r.t==='E'&&(r.c==='CMV'||r.c==='CF')&&r.m===m).reduce((s,r)=>s+r.v,0))));
   const mResOp=meses.map((_,i)=>Math.round(mVentas[i]+mCostos[i]));
   dc('pc-mes');
   dc('pc-mes');
