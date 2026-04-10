@@ -574,9 +574,9 @@ function renderPcCharts(data){
     type:'bar',
     data:{labels,datasets:[
       {label:'Ventas',data:v,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:wide?0.5:0.6,categoryPercentage:wide?0.6:0.8},
+       order:2,barPercentage:0.5,categoryPercentage:0.8},
       {label:'Costos operativos',data:co,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:wide?0.5:0.6,categoryPercentage:wide?0.6:0.8},
+       order:2,barPercentage:0.5,categoryPercentage:0.8},
       {label:'Resultado operativo',data:ro,type:'line',borderColor:'#1A5C96',
        backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:4,
        pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
@@ -586,7 +586,7 @@ function renderPcCharts(data){
         tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
       scales:{
         x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
-        y:{stacked:false,ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
           grid:{color:'rgba(0,0,0,0.05)'},
           afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=m;axis.max+=m;}}
       }
@@ -608,9 +608,9 @@ function renderPcCharts(data){
     type:'bar',
     data:{labels:meses.map(m=>nomM[m]||'Mes '+m),datasets:[
       {label:'Ventas',data:mVentas,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:0.5,categoryPercentage:0.6},
+       order:2,barPercentage:0.5,categoryPercentage:0.65},
       {label:'Costos operativos',data:mCostos,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       stack:'s',order:2,barPercentage:0.5,categoryPercentage:0.6},
+       order:2,barPercentage:0.5,categoryPercentage:0.65},
       {label:'Resultado operativo',data:mResOp,type:'line',borderColor:'#1A5C96',
        backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:5,
        pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
@@ -620,7 +620,7 @@ function renderPcCharts(data){
         tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
       scales:{
         x:{ticks:{font:{size:12},color:'#9E8E82'},grid:{display:false}},
-        y:{stacked:false,ticks:{callback:v=>fmt(v),font:{size:10},color:'#9E8E82'},
+        y:{ticks:{callback:v=>fmt(v),font:{size:10},color:'#9E8E82'},
           grid:{color:'rgba(0,0,0,0.05)'},
           afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=m;axis.max+=m;}}
       }
@@ -656,7 +656,8 @@ function makePcPie(canvasId,vals,labels,colors,legId){
     data:{labels,datasets:[{data:vals.map(v=>Math.round(Math.max(0,v))),backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},
     options:{responsive:true,maintainAspectRatio:false,
       rotation:-90,
-      plugins:{legend:{display:false}},cutout:'55%'}
+      plugins:{legend:{display:false}},
+      cutout:'55%'}
   });
   if(legId){
     document.getElementById(legId).innerHTML=labels.map((l,i)=>`
