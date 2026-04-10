@@ -113,7 +113,7 @@ tr.post-row td:nth-child(2){color:var(--amber);}
 .mini-pie-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
 .mini-pie-card{background:var(--card);border:1px solid var(--bord);border-radius:3px;padding:1rem 1.2rem;}
 footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-align:center;font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;}
-@media(max-width:1000px){
+@media(max-width:700px){
   .kgrid,.kgrid2{grid-template-columns:repeat(3,1fr);}
   .cgrid2,.cgrid21{grid-template-columns:1fr;}
   .be-grid{grid-template-columns:1fr;}
@@ -569,14 +569,13 @@ function renderPcCharts(data){
   const ventas=ks.map(k=>Math.round(mp[k].v));
   const costos=ks.map(k=>-Math.round(mp[k].co));   // negativos hacia abajo
   const resOp=ks.map((k,i)=>Math.round(ventas[i]+costos[i])); // ventas - costos
-  // Chart options shared between weekly and monthly
-  const semOpts=(labels,v,co,ro,wide=false)=>({
+  const chartOpts=(labels,v,co,ro)=>({
     type:'bar',
     data:{labels,datasets:[
       {label:'Ventas',data:v,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       order:2,barPercentage:0.5,categoryPercentage:0.8},
+       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
       {label:'Costos operativos',data:co,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       order:2,barPercentage:0.5,categoryPercentage:0.8},
+       stack:'s',order:2,barPercentage:0.6,categoryPercentage:0.8},
       {label:'Resultado operativo',data:ro,type:'line',borderColor:'#1A5C96',
        backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:4,
        pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
@@ -588,44 +587,22 @@ function renderPcCharts(data){
         x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
         y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
           grid:{color:'rgba(0,0,0,0.05)'},
-          afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=m;axis.max+=m;}}
+          afterDataLimits(axis){const pad=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=pad;axis.max+=pad;}}
       }
     }
   });
 
   dc('pc-sem');
-  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),semOpts(ks,ventas,costos,resOp));
+  CH['pc-sem']=new Chart(document.getElementById('pc-chart-sem'),chartOpts(ks,ventas,costos,resOp));
 
-  // === GRAFICO MENSUAL ===
+  // === GRAFICO MENSUAL (misma lógica que semanal) ===
   const meses=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
   const nomM={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
   const mVentas=meses.map(m=>Math.round(data.filter(r=>r.t==='I'&&r.c==='V'&&r.m===m).reduce((s,r)=>s+r.v,0)));
   const mCostos=meses.map(m=>-Math.round(data.filter(r=>r.t==='E'&&(r.c==='CMV'||r.c==='CF')&&r.m===m).reduce((s,r)=>s+r.v,0)));
   const mResOp=meses.map((_,i)=>Math.round(mVentas[i]+mCostos[i]));
   dc('pc-mes');
-  dc('pc-mes');
-  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),{
-    type:'bar',
-    data:{labels:meses.map(m=>nomM[m]||'Mes '+m),datasets:[
-      {label:'Ventas',data:mVentas,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       order:2,barPercentage:0.5,categoryPercentage:0.65},
-      {label:'Costos operativos',data:mCostos,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       order:2,barPercentage:0.5,categoryPercentage:0.65},
-      {label:'Resultado operativo',data:mResOp,type:'line',borderColor:'#1A5C96',
-       backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:5,
-       pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
-      scales:{
-        x:{ticks:{font:{size:12},color:'#9E8E82'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:10},color:'#9E8E82'},
-          grid:{color:'rgba(0,0,0,0.05)'},
-          afterDataLimits(axis){const m=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=m;axis.max+=m;}}
-      }
-    }
-  });
+  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),chartOpts(meses.map(m=>nomM[m]||'Mes '+m),mVentas,mCostos,mResOp));
 
   // === TORTA 1: Margen bruto vs CMV (sobre ventas) ===
   const v=c.ventas;
