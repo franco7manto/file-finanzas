@@ -197,6 +197,22 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
       <div id="pc-pie3-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:11px;"></div>
     </div>
   </div>
+
+  <!-- PUNTO DE EQUILIBRIO -->
+  <div class="divider" style="margin-top:1.5rem">Punto de equilibrio</div>
+  <div class="ccard" style="margin-bottom:0">
+    <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start">
+      <div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="position:relative;height:240px"><canvas id="chart-be" role="img" aria-label="Costos e ingresos vs nivel de ventas"></canvas></div>
+          <div style="position:relative;height:240px"><canvas id="chart-be-result" role="img" aria-label="Resultado según nivel de ventas"></canvas></div>
+        </div>
+      </div>
+      <div class="be-stats" id="be-stats" style="min-width:180px"></div>
+    </div>
+    <div class="divider" style="margin-top:1rem">Verificación por mes</div>
+    <div id="be-month-list" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px"></div>
+  </div>
 </div>
 
 <!-- ==================== TAB 2: FLUJO DE FONDOS ==================== -->
@@ -251,14 +267,7 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
     <div style="position:relative;height:320px"><canvas id="chart-waterfall" role="img" aria-label="Gráfico cascada flujo de fondos"></canvas></div>
   </div>
 
-  <!-- BREAKEVEN -->
-  <div class="ccard">
-    <div class="ctitle">Punto de equilibrio</div>
-    <div class="be-grid">
-      <div style="position:relative;height:260px"><canvas id="chart-be" role="img" aria-label="Punto de equilibrio"></canvas></div>
-      <div class="be-stats" id="be-stats"></div>
-    </div>
-  </div>
+
 </div>
 
 <!-- ==================== TAB 3: INGRESOS ==================== -->
@@ -545,6 +554,7 @@ function renderPanel(data){
   netoEl.className='kval '+(c.resultadoNeto>=0?'pos':'neg');
   set('pc-neto2',(c.resultadoNeto>=0?'superávit':'déficit')+' · '+pct(c.resultadoNeto)+' s/ventas');
   renderPcCharts(data);
+  renderBreakeven(CALC);
 }
 
 function renderPcCharts(data){
@@ -668,7 +678,6 @@ function renderFlujo(data){
     </tr>`).join('');
   recalcAjustes();
   renderWaterfall(c);
-  renderBreakeven(c);
 }
 
 function recalcAjustes(){
@@ -708,30 +717,137 @@ function renderWaterfall(c){
 }
 
 function renderBreakeven(c){
-  // BE = CF / (1 - CMV/Ventas) = CF / Margen Bruto %
-  const mbPct=c.ventas>0?c.margenBruto/c.ventas:0;
-  const be=mbPct>0?(c.cf+c.g)/mbPct:0;
-  // Escala: 0 a 2x ventas
-  const maxX=Math.max(c.ventas*1.5,be*1.5);
-  const pts=20;
-  const step=maxX/pts;
-  const labels=Array.from({length:pts+1},(_,i)=>Math.round(i*step));
-  const ingresos=labels;
-  const costos=labels.map(x=>Math.round(c.cf+c.g+x*(c.cmv/c.ventas)));
+  // --- Determinar si estamos en modo "todo" para mensualizar ---
+  const isTodo = CF==='all';
+
+  // Calcular días del período filtrado para mensualizar
+  const data=gf();
+  const fechas=data.map(r=>r.f).filter(Boolean);
+  // Número de días: si es todo, usamos 90 días (ene-mar), si es un mes usamos días del mes
+  let diasPeriodo=30.4167;
+  if(isTodo){
+    // contar días únicos en el dataset
+    const dias=new Set(D.map(r=>r.f));
+    diasPeriodo=Math.max(dias.size,1);
+  }
+  const factor=isTodo?(30.4167/diasPeriodo):1;
+
+  // Aplicar factor de mensualización
+  const cf  = c.cf   * factor;
+  const cmv = c.cmv  * factor;
+  const ventas = c.ventas * factor;
+  const g   = c.g    * factor;
+
+  const cvRatio = ventas>0 ? cmv/ventas : 0;
+  const mbPct   = 1 - cvRatio;
+  const be      = mbPct>0 ? cf/mbPct : 0;
+
+  // Escala: 0 al 150% del mayor entre ventas y BE
+  const maxX = Math.max(ventas*1.4, be*1.4, 1000);
+  const pts  = 40;
+  const step = maxX/pts;
+  const xVals = Array.from({length:pts+1},(_,i)=>Math.round(i*step));
+  const xLabels = xVals.map(v=>fmt(v));
+
+  // Series para chart izquierdo (eje Y = $)
+  const sFijos    = xVals.map(()=>Math.round(cf));
+  const sVariables= xVals.map(x=>Math.round(x*cvRatio));
+  const sTotCostos= xVals.map(x=>Math.round(cf + x*cvRatio));
+  const sVentas   = xVals.map(x=>Math.round(x));
+
+  // Series para chart derecho (resultado = ventas - costos totales)
+  const sResult = xVals.map(x=>Math.round(x - (cf + x*cvRatio)));
+
   dc('be');
-  CH['be']=new Chart(document.getElementById('chart-be'),{type:'line',data:{labels:labels.map(v=>fmt(v)),datasets:[
-    {label:'Ingresos',data:ingresos,borderColor:'#27633B',backgroundColor:'rgba(39,99,59,0.08)',fill:true,borderWidth:2,pointRadius:0,tension:0.1},
-    {label:'Costos totales',data:costos,borderColor:'#B83030',backgroundColor:'rgba(184,48,48,0.05)',fill:true,borderWidth:2,pointRadius:0,tension:0.1},
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-    tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}},
-    scales:{x:{ticks:{maxTicksLimit:6,font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}},
-      y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}}}});
-  // Stats
+  CH['be']=new Chart(document.getElementById('chart-be'),{
+    type:'line',
+    data:{labels:xLabels,datasets:[
+      {label:'Costos fijos',   data:sFijos,    borderColor:'#8B2020',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4,borderDash:[5,3]},
+      {label:'Costos variables',data:sVariables,borderColor:'#C05050',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4},
+      {label:'Costos totales', data:sTotCostos,borderColor:'#B83030',backgroundColor:'rgba(184,48,48,0.06)',fill:true,borderWidth:2,pointRadius:0,tension:0.4},
+      {label:'Ventas',         data:sVentas,   borderColor:'#27633B',backgroundColor:'rgba(39,99,59,0.06)',fill:true,borderWidth:2.5,pointRadius:0,tension:0.4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10},color:'#6B5B4E',padding:10}},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}},
+      scales:{
+        x:{ticks:{maxTicksLimit:6,font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}}
+      }
+    }
+  });
+
+  dc('be-result');
+  CH['be-result']=new Chart(document.getElementById('chart-be-result'),{
+    type:'line',
+    data:{labels:xLabels,datasets:[
+      {label:'Resultado',data:sResult,
+       borderColor:'#1A5C96',
+       backgroundColor:ctx=>{
+         const v=ctx.chart.chartArea;
+         if(!v)return 'rgba(26,92,150,0.1)';
+         const g2=ctx.chart.ctx.createLinearGradient(0,v.top,0,v.bottom);
+         g2.addColorStop(0,'rgba(39,99,59,0.15)');
+         g2.addColorStop(0.5,'rgba(26,92,150,0.05)');
+         g2.addColorStop(1,'rgba(184,48,48,0.1)');
+         return g2;
+       },
+       fill:true,borderWidth:2.5,pointRadius:0,tension:0.4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10},color:'#6B5B4E',padding:10}},
+        tooltip:{callbacks:{label:ctx=>'Resultado: '+fmt(ctx.raw)}}},
+      scales:{
+        x:{ticks:{maxTicksLimit:6,font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
+          grid:{color:'rgba(0,0,0,0.04)'},
+          afterDataLimits(axis){axis.min=Math.min(axis.min,-cf*0.1);}}
+      }
+    }
+  });
+
+  // Stats — compactos
+  const ventasActuales = ventas;
+  const cumple = ventasActuales >= be;
   document.getElementById('be-stats').innerHTML=`
-    <div class="be-stat"><div class="be-stat-label">Margen bruto %</div><div class="be-stat-val">${(mbPct*100).toFixed(1)}%</div></div>
-    <div class="be-stat"><div class="be-stat-label">Costo variable unitario</div><div class="be-stat-val">${fmt(c.cvu)}</div></div>
-    <div class="be-stat"><div class="be-stat-label">Punto de equilibrio</div><div class="be-stat-val">${fmt(be)}</div></div>
-    <div class="be-stat" style="border-left-color:${c.ventas>=be?'#27633B':'#B83030'}"><div class="be-stat-label">Ventas actuales vs BE</div><div class="be-stat-val" style="color:${c.ventas>=be?'#27633B':'#B83030'}">${c.ventas>=be?'✓ sobre':' bajo'} BE</div></div>`;
+    <div class="be-stat" style="padding:.5rem .8rem;margin-bottom:8px">
+      <div class="be-stat-label">Punto de equilibrio</div>
+      <div class="be-stat-val" style="font-size:18px">${fmt(be)}</div>
+    </div>
+    <div class="be-stat" style="padding:.5rem .8rem;margin-bottom:8px">
+      <div class="be-stat-label">Margen contribución</div>
+      <div class="be-stat-val" style="font-size:18px">${(mbPct*100).toFixed(1)}%</div>
+    </div>
+    <div class="be-stat" style="padding:.5rem .8rem;margin-bottom:8px">
+      <div class="be-stat-label">Costos fijos${isTodo?' (mens.)':''}</div>
+      <div class="be-stat-val" style="font-size:18px">${fmt(cf)}</div>
+    </div>
+    <div class="be-stat" style="padding:.5rem .8rem;border-left-color:${cumple?'#27633B':'#B83030'}">
+      <div class="be-stat-label">Ventas${isTodo?' (mens.)':''} vs BE</div>
+      <div class="be-stat-val" style="font-size:18px;color:${cumple?'#27633B':'#B83030'}">${cumple?'✓ sobre':'✗ bajo'} BE</div>
+    </div>`;
+
+  // Lista de meses
+  const nomMes={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
+  const mesesDisp=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
+  const listEl=document.getElementById('be-month-list');
+  if(listEl){
+    listEl.innerHTML=mesesDisp.map(m=>{
+      const md=D.filter(r=>r.m===m);
+      const mv=md.filter(r=>r.t==='I'&&r.c==='V').reduce((s,r)=>s+r.v,0);
+      const mcf=Math.abs(md.filter(r=>r.t==='E'&&r.c==='CF').reduce((s,r)=>s+r.v,0));
+      const mcmv=Math.abs(md.filter(r=>r.t==='E'&&r.c==='CMV').reduce((s,r)=>s+r.v,0));
+      const mcvR=mv>0?mcmv/mv:0;
+      const mmbP=1-mcvR;
+      const mBe=mmbP>0?mcf/mmbP:0;
+      const ok=mv>=mBe;
+      return `<div style="background:${ok?'rgba(39,99,59,0.08)':'rgba(184,48,48,0.08)'};border:1px solid ${ok?'rgba(39,99,59,0.25)':'rgba(184,48,48,0.25)'};border-radius:3px;padding:.6rem 1rem;flex:1;min-width:120px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2);margin-bottom:4px">${nomMes[m]}</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:${ok?'#27633B':'#B83030'}">${ok?'✓ Cumplido':'✗ No cumplido'}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px">Ventas ${fmt(mv)} / BE ${fmt(mBe)}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ===== TAB 3: INGRESOS =====
