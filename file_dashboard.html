@@ -201,13 +201,8 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
   <!-- PUNTO DE EQUILIBRIO -->
   <div class="divider" style="margin-top:1.5rem">Punto de equilibrio</div>
   <div class="ccard" style="margin-bottom:0">
-    <div style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start">
-      <div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div style="position:relative;height:240px"><canvas id="chart-be" role="img" aria-label="Costos e ingresos vs nivel de ventas"></canvas></div>
-          <div style="position:relative;height:240px"><canvas id="chart-be-result" role="img" aria-label="Resultado según nivel de ventas"></canvas></div>
-        </div>
-      </div>
+    <div style="display:flex;gap:20px;align-items:flex-start">
+      <div style="position:relative;height:260px;flex:1"><canvas id="chart-be" role="img" aria-label="Costos e ingresos vs nivel de ventas"></canvas></div>
       <div class="be-stats" id="be-stats" style="min-width:180px"></div>
     </div>
     <div class="divider" style="margin-top:1rem">Verificación por mes</div>
@@ -758,53 +753,61 @@ function renderBreakeven(c){
   // Series para chart derecho (resultado = ventas - costos totales)
   const sResult = xVals.map(x=>Math.round(x - (cf + x*cvRatio)));
 
+  // Resultado line (ventas - costos totales), punteada amarilla
+  const sResult = xVals.map(x=>Math.round(x - (cf + x*cvRatio)));
+
+  // Find BE x index (closest to where result = 0)
+  const beIdx = xVals.reduce((best,x,i)=>Math.abs(sResult[i])<Math.abs(sResult[best])?i:best, 0);
+
   dc('be');
   CH['be']=new Chart(document.getElementById('chart-be'),{
     type:'line',
     data:{labels:xLabels,datasets:[
-      {label:'Costos fijos',   data:sFijos,    borderColor:'#8B2020',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4,borderDash:[5,3]},
-      {label:'Costos variables',data:sVariables,borderColor:'#C05050',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4},
-      {label:'Costos totales', data:sTotCostos,borderColor:'#B83030',backgroundColor:'rgba(184,48,48,0.06)',fill:true,borderWidth:2,pointRadius:0,tension:0.4},
-      {label:'Ventas',         data:sVentas,   borderColor:'#27633B',backgroundColor:'rgba(39,99,59,0.06)',fill:true,borderWidth:2.5,pointRadius:0,tension:0.4},
+      {label:'Costos fijos',    data:sFijos,     borderColor:'#8B2020',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4,borderDash:[5,3]},
+      {label:'Costos variables',data:sVariables, borderColor:'#C05050',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.4},
+      {label:'Costos totales',  data:sTotCostos, borderColor:'#B83030',backgroundColor:'rgba(184,48,48,0.06)',fill:true,borderWidth:2,pointRadius:0,tension:0.4},
+      {label:'Ventas',          data:sVentas,    borderColor:'#27633B',backgroundColor:'rgba(39,99,59,0.06)',fill:true,borderWidth:2.5,pointRadius:0,tension:0.4},
+      {label:'Resultado',       data:sResult,    borderColor:'#C8964C',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.4,borderDash:[4,3]},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10},color:'#6B5B4E',padding:10}},
-        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}}},
+      plugins:{
+        legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10},color:'#6B5B4E',padding:10}},
+        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw)}},
+        annotation:{
+          annotations:{
+            bePoint:{type:'point',xValue:beIdx,yValue:0,radius:6,backgroundColor:'#C8964C',borderColor:'#fff',borderWidth:2}
+          }
+        }
+      },
       scales:{
-        x:{ticks:{maxTicksLimit:6,font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}}
+        x:{
+          ticks:{
+            maxTicksLimit:7,
+            font:{size:9},
+            color:(ctx)=>{
+              // highlight the BE tick
+              if(ctx.index===beIdx)return '#C8964C';
+              return '#9E8E82';
+            },
+            callback:(val,idx)=>{
+              if(idx===beIdx)return '▼ '+xLabels[idx];
+              return xLabels[idx];
+            }
+          },
+          grid:{color:'rgba(0,0,0,0.04)'}
+        },
+        y:{
+          ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
+          grid:{
+            color:(ctx)=>ctx.tick.value===0?'rgba(200,150,76,0.5)':'rgba(0,0,0,0.04)',
+            lineWidth:(ctx)=>ctx.tick.value===0?1.5:1
+          }
+        }
       }
     }
   });
 
-  dc('be-result');
-  CH['be-result']=new Chart(document.getElementById('chart-be-result'),{
-    type:'line',
-    data:{labels:xLabels,datasets:[
-      {label:'Resultado',data:sResult,
-       borderColor:'#1A5C96',
-       backgroundColor:ctx=>{
-         const v=ctx.chart.chartArea;
-         if(!v)return 'rgba(26,92,150,0.1)';
-         const g2=ctx.chart.ctx.createLinearGradient(0,v.top,0,v.bottom);
-         g2.addColorStop(0,'rgba(39,99,59,0.15)');
-         g2.addColorStop(0.5,'rgba(26,92,150,0.05)');
-         g2.addColorStop(1,'rgba(184,48,48,0.1)');
-         return g2;
-       },
-       fill:true,borderWidth:2.5,pointRadius:0,tension:0.4}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'top',labels:{boxWidth:10,font:{size:10},color:'#6B5B4E',padding:10}},
-        tooltip:{callbacks:{label:ctx=>'Resultado: '+fmt(ctx.raw)}}},
-      scales:{
-        x:{ticks:{maxTicksLimit:6,font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
-          grid:{color:'rgba(0,0,0,0.04)'},
-          afterDataLimits(axis){axis.min=Math.min(axis.min,-cf*0.1);}}
-      }
-    }
-  });
+
 
   // Stats — compactos
   const ventasActuales = ventas;
@@ -822,29 +825,23 @@ function renderBreakeven(c){
       <div class="be-stat-label">Costos fijos${isTodo?' (mens.)':''}</div>
       <div class="be-stat-val" style="font-size:18px">${fmt(cf)}</div>
     </div>
-    <div class="be-stat" style="padding:.5rem .8rem;border-left-color:${cumple?'#27633B':'#B83030'}">
-      <div class="be-stat-label">Ventas${isTodo?' (mens.)':''} vs BE</div>
-      <div class="be-stat-val" style="font-size:18px;color:${cumple?'#27633B':'#B83030'}">${cumple?'✓ sobre':'✗ bajo'} BE</div>
-    </div>`;
+  \`;
 
   // Lista de meses
   const nomMes={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
   const mesesDisp=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
   const listEl=document.getElementById('be-month-list');
   if(listEl){
+    // BE mensualizado = usar cf (ya mensualizado si isTodo) y mbPct globales
+    const beMensual = be; // be ya está calculado con el factor correcto
     listEl.innerHTML=mesesDisp.map(m=>{
       const md=D.filter(r=>r.m===m);
       const mv=md.filter(r=>r.t==='I'&&r.c==='V').reduce((s,r)=>s+r.v,0);
-      const mcf=Math.abs(md.filter(r=>r.t==='E'&&r.c==='CF').reduce((s,r)=>s+r.v,0));
-      const mcmv=Math.abs(md.filter(r=>r.t==='E'&&r.c==='CMV').reduce((s,r)=>s+r.v,0));
-      const mcvR=mv>0?mcmv/mv:0;
-      const mmbP=1-mcvR;
-      const mBe=mmbP>0?mcf/mmbP:0;
-      const ok=mv>=mBe;
+      const ok=mv>=beMensual;
       return `<div style="background:${ok?'rgba(39,99,59,0.08)':'rgba(184,48,48,0.08)'};border:1px solid ${ok?'rgba(39,99,59,0.25)':'rgba(184,48,48,0.25)'};border-radius:3px;padding:.6rem 1rem;flex:1;min-width:120px">
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2);margin-bottom:4px">${nomMes[m]}</div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:${ok?'#27633B':'#B83030'}">${ok?'✓ Cumplido':'✗ No cumplido'}</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:2px">Ventas ${fmt(mv)} / BE ${fmt(mBe)}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:2px">Ventas ${fmt(mv)} / P. Eq. ${fmt(beMensual)}</div>
       </div>`;
     }).join('');
   }
