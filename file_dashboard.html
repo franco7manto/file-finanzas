@@ -750,10 +750,7 @@ function renderBreakeven(c){
   const sTotCostos= xVals.map(x=>Math.round(cf + x*cvRatio));
   const sVentas   = xVals.map(x=>Math.round(x));
 
-  // Series para chart derecho (resultado = ventas - costos totales)
-  const sResult = xVals.map(x=>Math.round(x - (cf + x*cvRatio)));
-
-  // Resultado line (ventas - costos totales), punteada amarilla
+  // Resultado line punteada amarilla
   const sResult = xVals.map(x=>Math.round(x - (cf + x*cvRatio)));
 
   // Find BE x index (closest to where result = 0)
@@ -825,7 +822,7 @@ function renderBreakeven(c){
       <div class="be-stat-label">Costos fijos${isTodo?' (mens.)':''}</div>
       <div class="be-stat-val" style="font-size:18px">${fmt(cf)}</div>
     </div>
-  \`;
+  `;
 
   // Lista de meses
   const nomMes={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
