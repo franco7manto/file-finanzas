@@ -603,28 +603,7 @@ function renderPcCharts(data){
   const mResOp=meses.map((_,i)=>Math.round(mVentas[i]+mCostos[i]));
   dc('pc-mes');
   dc('pc-mes');
-  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),{
-    type:'bar',
-    data:{labels:meses.map(m=>nomM[m]||'Mes '+m),datasets:[
-      {label:'Ventas',data:mVentas,backgroundColor:'rgba(39,99,59,0.75)',borderRadius:2,
-       order:2,barPercentage:0.35,categoryPercentage:0.9},
-      {label:'Costos operativos',data:mCostos,backgroundColor:'rgba(184,48,48,0.75)',borderRadius:2,
-       order:2,barPercentage:0.35,categoryPercentage:0.9},
-      {label:'Resultado operativo',data:mResOp,type:'line',borderColor:'#1A5C96',
-       backgroundColor:'rgba(26,92,150,0.08)',borderWidth:2.5,pointRadius:5,
-       pointBackgroundColor:'#1A5C96',fill:true,tension:0.3,order:1}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmt(Math.abs(ctx.raw))+(ctx.raw<0?' (costo)':'')}}},
-      scales:{
-        x:{ticks:{font:{size:12},color:'#9E8E82'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:10},color:'#9E8E82'},
-          grid:{color:'rgba(0,0,0,0.05)'},
-          afterDataLimits(axis){const pad=Math.max(Math.abs(axis.min),Math.abs(axis.max))*0.08;axis.min-=pad;axis.max+=pad;}}
-      }
-    }
-  });
+  CH['pc-mes']=new Chart(document.getElementById('pc-chart-mes'),chartOpts(meses.map(m=>nomM[m]||'Mes '+m),mVentas,mCostos,mResOp));
 
   // === TORTA 1: Margen bruto vs CMV (sobre ventas) ===
   const v=c.ventas;
