@@ -64,17 +64,17 @@ header{background:var(--bordo);padding:0 2rem;display:flex;align-items:center;ju
 /* FLUJO TABLE */
 .flujo-wrap{background:var(--card);border:1px solid var(--bord);border-radius:3px;overflow:hidden;margin-bottom:16px;}
 .flujo-table{width:100%;border-collapse:collapse;}
-.flujo-table th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding:10px 16px;text-align:left;background:rgba(123,31,31,0.04);border-bottom:1px solid var(--bord);}
+.flujo-table th{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--tx);padding:12px 16px;text-align:left;background:rgba(123,31,31,0.12);border-bottom:2px solid var(--bord2);}
 .flujo-table th:nth-child(2),.flujo-table th:nth-child(3){text-align:right;}
 .flujo-table td{padding:9px 16px;border-bottom:1px solid rgba(0,0,0,0.04);font-size:13px;}
 .flujo-table td:nth-child(2),.flujo-table td:nth-child(3){text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;}
-.flujo-table tr.subtotal td{background:rgba(123,31,31,0.04);font-weight:600;border-top:1px solid var(--bord);}
-.flujo-table tr.total td{background:rgba(123,31,31,0.08);font-weight:700;font-size:14px;border-top:2px solid var(--bord2);}
+.flujo-table tr.subtotal td{background:rgba(123,31,31,0.07);font-weight:700;border-top:1px solid var(--bord2);color:var(--tx);}
+.flujo-table tr.total td{background:rgba(123,31,31,0.14);font-weight:700;font-size:14px;border-top:2px solid var(--bord2);color:var(--tx);}
 .flujo-table tr.total td:nth-child(2),.flujo-table tr.total td:nth-child(3){font-size:16px;}
 .flujo-table tr:last-child td{border-bottom:none;}
 .frow-pos td:nth-child(2){color:var(--green);}
 .frow-neg td:nth-child(2){color:var(--red);}
-.frow-pct{color:var(--tx3) !important;font-size:12px !important;font-weight:400 !important;}
+.frow-pct{color:var(--tx2) !important;font-size:12px !important;font-weight:500 !important;}
 .flujo-input{width:100%;border:none;background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;text-align:right;color:var(--blue);padding:0;outline:none;}
 .flujo-input:focus{outline:2px solid var(--bordo);outline-offset:2px;border-radius:2px;}
 .flujo-input::placeholder{color:var(--tx3);font-weight:400;}
@@ -227,28 +227,19 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
     </table>
   </div>
 
-  <!-- AJUSTES MANUALES -->
-  <div class="divider">Ajustes manuales</div>
+  <!-- AJUSTES -->
+  <div class="divider">Ajustes</div>
   <div class="flujo-wrap">
     <table class="flujo-table">
+      <thead><tr><th>Concepto</th><th>Monto</th><th>% Ventas</th></tr></thead>
       <tbody>
-        <tr class="input-row">
-          <td>Deuda Proveedores (ingresá el monto)</td>
-          <td><input class="flujo-input" type="number" id="inp-deuda" placeholder="0" step="1000" oninput="recalcAjustes()"></td>
-          <td class="frow-pct" id="pct-deuda">—</td>
-        </tr>
-        <tr class="derived-row">
-          <td>Efectivo real (ajustado por deuda)</td>
-          <td id="val-ef-real">—</td>
-          <td class="frow-pct" id="pct-ef-real">—</td>
-        </tr>
         <tr class="adj-row">
-          <td>Ajuste Cuota (ingresá el monto)</td>
-          <td><input class="flujo-input" type="number" id="inp-cuota" placeholder="0" step="1000" oninput="recalcAjustes()" style="color:var(--amber)"></td>
-          <td class="frow-pct" id="pct-cuota">—</td>
+          <td>Cuota socio saliente (Medina)</td>
+          <td id="val-cuota-medina">—</td>
+          <td class="frow-pct" id="pct-cuota-medina">—</td>
         </tr>
         <tr class="post-row">
-          <td>Total post cuota</td>
+          <td>Efectivo disponible post cuota</td>
           <td id="val-post-cuota">—</td>
           <td class="frow-pct" id="pct-post-cuota">—</td>
         </tr>
@@ -682,33 +673,76 @@ function recalcAjustes(){
   const V=c.ventas;
   const pct=v=>V>0?(v/V*100).toFixed(1)+'%':'—';
   const efDisp=c.efectivo;
-  const deuda=parseFloat(document.getElementById('inp-deuda').value)||0;
-  const cuota=parseFloat(document.getElementById('inp-cuota').value)||0;
-  const efReal=efDisp+deuda;
-  const postCuota=efDisp+cuota;
-  set('pct-deuda',deuda?pct(deuda):'—');
-  set('val-ef-real',paren(efReal));
-  document.getElementById('val-ef-real').style.color=efReal>=0?'#1A5C96':'#B83030';
-  set('pct-ef-real',pct(efReal));
-  set('pct-cuota',cuota?pct(cuota):'—');
+  // Cuota Medina: suma de egresos PN, subcategoria Cuota Medina
+  const cuotaMedina=Math.abs(data.filter(r=>r.t==='E'&&r.c==='PN'&&r.sc==='Cuota Medina').reduce((s,r)=>s+r.v,0));
+  const postCuota=efDisp+cuotaMedina; // sumamos porque cuotaMedina es un egreso que ya está en efectivo
+  const cmEl=document.getElementById('val-cuota-medina');
+  if(cmEl){
+    cmEl.textContent=fmt(cuotaMedina);
+    cmEl.style.color='#9A6010';
+  }
+  set('pct-cuota-medina',pct(cuotaMedina));
   set('val-post-cuota',paren(postCuota));
-  document.getElementById('val-post-cuota').style.color=postCuota>=0?'#9A6010':'#B83030';
+  const pcEl=document.getElementById('val-post-cuota');
+  if(pcEl)pcEl.style.color=postCuota>=0?'#27633B':'#B83030';
   set('pct-post-cuota',pct(postCuota));
 }
 
 function renderWaterfall(c){
-  const labels=['Ventas','− CMV','Mg. Bruto','− CF','Mg. Operativo','± Otros','Resultado Neto','− Aportes/Ret','Efectivo'];
-  const vals=[c.ventas,-c.cmv,c.margenBruto,-c.cf,c.margenOp,c.oi-c.g,c.resultadoNeto,-c.retiros+c.aportes,c.efectivo];
-  const cols=vals.map((v,i)=>{
-    if(i===0||i===2||i===4||i===6||i===8)return v>=0?'rgba(39,99,59,0.8)':'rgba(184,48,48,0.8)';
-    return v>=0?'rgba(39,99,59,0.5)':'rgba(184,48,48,0.5)';
+  // Cascading waterfall: floating bars [bottom, top]
+  const ingTotal = c.ventas + c.oi;
+  const subtotalOp = ingTotal - c.cmv - c.cf - c.g; // = resultado neto
+  const efectivo = subtotalOp - c.retiros + c.aportes;
+
+  // Each step: [start, end] for floating bar
+  // Positive steps float DOWN from top (costs falling from income)
+  // Subtotal and final are grounded bars
+  const steps = [
+    {lbl:'Ingresos totales', start:0,       end:ingTotal,                ground:true},
+    {lbl:'− C. Variables',   start:ingTotal-c.cmv, end:ingTotal,          ground:false},
+    {lbl:'− C. Fijos',       start:ingTotal-c.cmv-c.cf, end:ingTotal-c.cmv, ground:false},
+    {lbl:'− Otros gastos',   start:ingTotal-c.cmv-c.cf-c.g, end:ingTotal-c.cmv-c.cf, ground:false},
+    {lbl:'Resultado Neto',   start:0,       end:subtotalOp,               ground:true},
+    {lbl:'− Retiros/PN',     start:subtotalOp-c.retiros+c.aportes, end:subtotalOp, ground:false},
+    {lbl:'Efectivo disp.',   start:0,       end:efectivo,                 ground:true},
+  ];
+
+  const labels = steps.map(s=>s.lbl);
+  const floatData = steps.map(s=>[Math.round(s.start), Math.round(s.end)]);
+  const colors = steps.map(s=>{
+    if(s.ground){
+      if(s.lbl==='Ingresos totales') return 'rgba(39,99,59,0.85)';
+      if(s.lbl==='Resultado Neto')   return 'rgba(90,16,16,0.85)';
+      return s.end>=0 ? 'rgba(39,99,59,0.85)' : 'rgba(184,48,48,0.85)';
+    }
+    return 'rgba(184,48,48,0.65)';
   });
+
   dc('wf');
-  CH['wf']=new Chart(document.getElementById('chart-waterfall'),{type:'bar',data:{labels,datasets:[{data:vals.map(v=>Math.round(v)),backgroundColor:cols,borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>' '+paren(ctx.raw)}}},
-      scales:{x:{ticks:{font:{size:10},color:'#9E8E82'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+  CH['wf']=new Chart(document.getElementById('chart-waterfall'),{
+    type:'bar',
+    data:{labels,datasets:[{
+      data:floatData,
+      backgroundColor:colors,
+      borderRadius:3,
+      borderSkipped:false
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{
+          label:ctx=>{
+            const [b,t]=ctx.raw;
+            const v=t-b;
+            return ' '+paren(v);
+          }
+        }}
+      },
+      scales:{
+        x:{ticks:{font:{size:10},color:'#6B5B4E'},grid:{display:false}},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
 }
 
 function renderBreakeven(c){
