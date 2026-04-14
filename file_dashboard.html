@@ -233,12 +233,12 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
     <table class="flujo-table">
       <thead><tr><th>Concepto</th><th>Monto</th><th>% Ventas</th></tr></thead>
       <tbody>
-        <tr class="adj-row">
-          <td>Cuota socio saliente (Medina)</td>
+        <tr class="frow-neg">
+          <td>Cuota Medina</td>
           <td id="val-cuota-medina">—</td>
           <td class="frow-pct" id="pct-cuota-medina">—</td>
         </tr>
-        <tr class="post-row">
+        <tr class="total">
           <td>Efectivo disponible post cuota</td>
           <td id="val-post-cuota">—</td>
           <td class="frow-pct" id="pct-post-cuota">—</td>
@@ -268,12 +268,12 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
   <div class="kgrid2" style="grid-template-columns:repeat(3,1fr)">
     <div class="kcard cg"><div class="klbl">Total ingresos</div><div class="kval pos" id="ing-total">—</div><div class="ksub" id="ing-total2">—</div></div>
     <div class="kcard cg"><div class="klbl">Ingresos por venta</div><div class="kval pos" id="ing-venta">—</div><div class="ksub" id="ing-venta2">—</div></div>
-    <div class="kcard ca"><div class="klbl">Otros ingresos</div><div class="kval" id="ing-otros">—</div><div class="ksub" id="ing-otros2">—</div></div>
+    <div class="kcard cg"><div class="klbl">Otros ingresos</div><div class="kval" id="ing-otros">—</div><div class="ksub" id="ing-otros2">—</div></div>
   </div>
   <!-- Row 2 cards -->
   <div class="kgrid2" style="grid-template-columns:repeat(2,1fr);margin-bottom:1.5rem">
-    <div class="kcard"><div class="klbl">Mejor semana</div><div class="kval bor" id="ing-best">—</div><div class="ksub" id="ing-best2">—</div></div>
-    <div class="kcard"><div class="klbl">Promedio semanal</div><div class="kval bor" id="ing-avg">—</div><div class="ksub">por semana</div></div>
+    <div class="kcard cg"><div class="klbl">Mejor semana</div><div class="kval pos" id="ing-best">—</div><div class="ksub" id="ing-best2">—</div></div>
+    <div class="kcard cg"><div class="klbl">Promedio semanal</div><div class="kval pos" id="ing-avg">—</div><div class="ksub">por semana</div></div>
   </div>
   <!-- Ventas por mes -->
   <div class="ccard">
@@ -712,7 +712,8 @@ function renderWaterfall(c){
   const colors = steps.map(s=>{
     if(s.ground){
       if(s.lbl==='Ingresos totales') return 'rgba(39,99,59,0.85)';
-      if(s.lbl==='Resultado Neto')   return 'rgba(90,16,16,0.85)';
+      if(s.lbl==='Resultado Neto')   return s.end>=0 ? 'rgba(27,80,40,0.9)' : 'rgba(90,16,16,0.9)';
+      if(s.lbl==='Efectivo disp.')   return s.end>=0 ? 'rgba(27,80,40,0.9)' : 'rgba(90,16,16,0.9)';
       return s.end>=0 ? 'rgba(39,99,59,0.85)' : 'rgba(184,48,48,0.85)';
     }
     return 'rgba(184,48,48,0.65)';
@@ -739,7 +740,9 @@ function renderWaterfall(c){
       },
       scales:{
         x:{ticks:{font:{size:10},color:'#6B5B4E'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},
+          grid:{color:ctx=>ctx.tick.value===0?'rgba(123,31,31,0.5)':'rgba(0,0,0,0.05)',
+                lineWidth:ctx=>ctx.tick.value===0?2:1}}
       }
     }
   });
@@ -902,7 +905,7 @@ function renderIngresos(data){
   const meses=[1,2,3];
   const vm=meses.map(m=>Math.round(D.filter(r=>r.t==='I'&&r.c==='V'&&r.m===m).reduce((s,r)=>s+r.v,0)));
   dc('ing-mes');
-  CH['ing-mes']=new Chart(document.getElementById('ing-chart-mes'),{type:'bar',data:{labels:['Enero','Febrero','Marzo'],datasets:[{data:vm,backgroundColor:['#7B1F1F','#A33030','#C05050'],borderRadius:3}]},
+  CH['ing-mes']=new Chart(document.getElementById('ing-chart-mes'),{type:'bar',data:{labels:['Enero','Febrero','Marzo'],datasets:[{data:vm,backgroundColor:['#1B5028','#1B5028','#1B5028'],borderRadius:3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:12},color:'#6B5B4E'},grid:{display:false}},
         y:{ticks:{callback:v=>fmt(v),font:{size:10},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}}}});
@@ -921,20 +924,61 @@ function renderIngresos(data){
   // Build gradient annotations per month block
   const semLabels=semData.map(x=>x.key);
   const semVals=semData.map(x=>Math.round(x.v));
-  const semCols=semData.map(x=>mesColors[x.m]||'#7B1F1F');
-  CH['ing-sem']=new Chart(document.getElementById('ing-chart-sem'),{type:'bar',data:{labels:semLabels,datasets:[{data:semVals,backgroundColor:semCols,borderRadius:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
-      scales:{x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
-        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}}}});
-  // Build manual legend
+  // All bars same bordo color; alternate background shading per month via plugin
+  const mesShade={1:'rgba(245,239,224,0.0)',2:'rgba(220,210,190,0.35)',3:'rgba(245,239,224,0.0)'};
+  dc('ing-sem');
+  CH['ing-sem']=new Chart(document.getElementById('ing-chart-sem'),{
+    type:'bar',
+    data:{labels:semLabels,datasets:[
+      {data:semVals,backgroundColor:'#7B1F1F',borderRadius:2},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}},
+        monthBands:{semData,mesShade}
+      },
+      scales:{
+        x:{ticks:{autoSkip:false,font:{size:10},color:'#9E8E82'},grid:{display:false}},
+        y:{ticks:{callback:v=>fmt(v),font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    },
+    plugins:[{
+      id:'monthBands',
+      beforeDraw(chart){
+        const {ctx,chartArea,scales}=chart;
+        if(!chartArea)return;
+        const sd=semData;
+        const {left,right,top,bottom}=chartArea;
+        const xScale=scales.x;
+        const barW=xScale.width/sd.length;
+        let prevM=null,bandStart=left;
+        ctx.save();
+        sd.forEach((s,i)=>{
+          const x=xScale.getPixelForValue(i);
+          if(prevM!==null&&s.m!==prevM){
+            ctx.fillStyle=mesShade[prevM]||'transparent';
+            ctx.fillRect(bandStart,top,x-barW/2-bandStart,bottom-top);
+            bandStart=x-barW/2;
+          }
+          if(i===sd.length-1){
+            ctx.fillStyle=mesShade[s.m]||'transparent';
+            ctx.fillRect(bandStart,top,right-bandStart,bottom-top);
+          }
+          prevM=s.m;
+        });
+        ctx.restore();
+      }
+    }]
+  });
+  // Month legend with shade swatches
   const semCard=document.getElementById('ing-sem-card');
   const existLeg=semCard.querySelector('.sem-legend');if(existLeg)existLeg.remove();
   const legDiv=document.createElement('div');
   legDiv.className='legrow sem-legend';
   legDiv.style.marginBottom='8px';
-  [{m:1,l:'Enero'},{m:2,l:'Febrero'},{m:3,l:'Marzo'}].forEach(x=>{
-    legDiv.innerHTML+=`<span class="legitem"><span class="legdot" style="background:${mesColors[x.m]}"></span>${x.l}</span>`;
+  [{m:1,l:'Enero',bg:'rgba(245,239,224,0.6)'},{m:2,l:'Febrero',bg:'rgba(210,195,168,0.7)'},{m:3,l:'Marzo',bg:'rgba(245,239,224,0.6)'}].forEach(x=>{
+    legDiv.innerHTML+=`<span class="legitem"><span style="width:14px;height:14px;border-radius:2px;background:${x.bg};border:1px solid rgba(123,31,31,0.2);display:inline-block"></span>${x.l}</span>`;
   });
   semCard.insertBefore(legDiv,semCard.querySelector('div[style]'));
   // Tortas
