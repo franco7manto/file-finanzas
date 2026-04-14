@@ -285,11 +285,6 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
     <div class="ctitle">Ventas por semana</div>
     <div style="position:relative;height:220px"><canvas id="ing-chart-sem" role="img" aria-label="Ventas por semana"></canvas></div>
   </div>
-  <!-- Placeholder cantidades -->
-  <div class="ccard">
-    <div class="ctitle">Ventas en cantidades</div>
-    <div style="display:flex;align-items:center;justify-content:center;height:80px;color:var(--tx3);font-size:13px;font-style:italic">Datos de cantidades pendientes — completar cuando se provean</div>
-  </div>
   <!-- Tortas fuentes -->
   <div class="cgrid2">
     <div class="ccard" style="margin-bottom:0">
@@ -305,6 +300,77 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
         <div style="position:relative;height:180px;flex:1"><canvas id="ing-pie-tipo" role="img" aria-label="Ventas vs otros ingresos"></canvas></div>
         <div class="pie-legend" id="ing-pie-tipo-leg"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ======= SECCIÓN CANTIDADES ======= -->
+  <div class="divider" style="margin-top:1.5rem">Ventas en cantidades</div>
+
+  <!-- Ventas en cantidades por producto (top 15) -->
+  <div class="ccard">
+    <div class="ctitle">Unidades vendidas por producto</div>
+    <div style="position:relative;height:300px"><canvas id="vq-chart-prod" role="img" aria-label="Unidades por producto"></canvas></div>
+  </div>
+
+  <!-- Ventas de principales por categoría -->
+  <div class="ccard">
+    <div class="ctitle">Principales — unidades por categoría</div>
+    <div style="position:relative;height:240px"><canvas id="vq-chart-cat" role="img" aria-label="Principales por categoría"></canvas></div>
+  </div>
+
+  <!-- 3 tortas de composición -->
+  <div class="cgrid3" style="margin-bottom:16px">
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Composición — por producto</div>
+      <div style="position:relative;height:180px"><canvas id="vq-pie-prod" role="img" aria-label="Composición por producto"></canvas></div>
+      <div id="vq-pie-prod-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
+    </div>
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Composición — por tipo</div>
+      <div style="position:relative;height:180px"><canvas id="vq-pie-tipo" role="img" aria-label="Composición por tipo"></canvas></div>
+      <div id="vq-pie-tipo-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
+    </div>
+    <div class="ccard" style="margin-bottom:0">
+      <div class="ctitle">Composición — por categoría</div>
+      <div style="position:relative;height:180px"><canvas id="vq-pie-cat" role="img" aria-label="Composición por categoría"></canvas></div>
+      <div id="vq-pie-cat-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
+    </div>
+  </div>
+
+  <!-- Tabla de cantidades acumuladas -->
+  <div class="ccard" style="margin-bottom:0">
+    <div class="ctitle" style="margin-bottom:.8rem">Cantidades acumuladas por producto</div>
+    <!-- Filtros tabla -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3)">Filtrar:</div>
+      <select id="vq-filter-tipo" onchange="renderVQTable()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx);cursor:pointer">
+        <option value="">Todos los tipos</option>
+      </select>
+      <select id="vq-filter-cat" onchange="renderVQTable()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx);cursor:pointer">
+        <option value="">Todas las categorías</option>
+      </select>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3);margin-left:8px">Ordenar:</div>
+      <select id="vq-sort" onchange="renderVQTable()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx);cursor:pointer">
+        <option value="qty-desc">Mayor cantidad</option>
+        <option value="qty-asc">Menor cantidad</option>
+        <option value="name-asc">Nombre A→Z</option>
+        <option value="cat-asc">Categoría</option>
+      </select>
+    </div>
+    <div class="flujo-wrap" style="margin-bottom:0">
+      <table class="flujo-table" id="vq-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Categoría</th>
+            <th style="text-align:right">Unidades</th>
+            <th style="text-align:right">% del total</th>
+          </tr>
+        </thead>
+        <tbody id="vq-tbody"></tbody>
+        <tfoot id="vq-tfoot"></tfoot>
+      </table>
     </div>
   </div>
 </div>
@@ -383,8 +449,44 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
 <script>
 // ===== DATA =====
 let D=[];
+let VQ=[]; // ventas en cantidades
+
+function parseVentasQ(text){
+  const lines=text.trim().split('\n');
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const cols=[];let cur='';let inQ=false;
+    for(let c=0;c<lines[i].length;c++){
+      const ch=lines[i][c];
+      if(ch==='"'){inQ=!inQ;}
+      else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+      else{cur+=ch;}
+    }
+    cols.push(cur.trim());
+    if(cols.length<2||!cols[0])continue;
+    const concepto=cols[0].replace(/"/g,'').trim();
+    if(!concepto||concepto==='Concepto')continue;
+    const fechaRaw=cols[1].replace(/"/g,'').trim();
+    const tipo=cols[2]?cols[2].replace(/"/g,'').trim():'';
+    const cat=cols[3]?cols[3].replace(/"/g,'').trim():'';
+    // Parse date dd/mm/yy or dd/mm/yyyy
+    let mes=0;
+    const dp=fechaRaw.split('/');
+    if(dp.length>=2){
+      mes=parseInt(dp[1])||0;
+      // Handle 2-digit year
+      if(dp[2]&&dp[2].length===2){
+        const yr=parseInt(dp[2]);
+        // dp[2] as 4-digit
+      }
+    }
+    rows.push({producto:concepto,fecha:fechaRaw,tipo,cat,m:mes});
+  }
+  return rows;
+}
 
 const CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=91943809&single=true&output=csv';
+const VENTASQ_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vTv7i2iii74qxRSOOKjeHn_hQExbYuyzzh-6LlAfqfA3OyZJy3F7CDJFJeeaVhrS-x9BRf8JQybL68N/pub?gid=1262273306&single=true&output=csv';
 
 function parseCSV(text){
   const lines=text.trim().split('\n');
@@ -986,6 +1088,8 @@ function renderIngresos(data){
   const tr=V.filter(r=>r.sc==='Transferencia').reduce((s,r)=>s+r.v,0);
   makePie('ing-pie-medio',[ef,tr],['Efectivo','Transferencia'],['#7B1F1F','#1A5C96'],'ing-pie-medio-leg');
   makePie('ing-pie-tipo',[tV,tOI],['Ventas','Otros ingresos'],['#27633B','#9A6010'],'ing-pie-tipo-leg');
+  // Cantidades
+  renderVentasQ();
 }
 
 // ===== TAB 4: COSTOS =====
@@ -1072,6 +1176,161 @@ function makeMiniPie(canvasId,vals,labels,colors,legId){
   }
 }
 
+
+// ===== VENTAS EN CANTIDADES =====
+const VQ_COLORS = [
+  '#7B1F1F','#A33030','#C05050','#D4846A',
+  '#27633B','#1B5028','#3DAA6E',
+  '#1A5C96','#2C8FA0','#9A6010',
+  '#6B5B4E','#444','#888','#BBAA99','#C8964C'
+];
+
+function getVQFiltered(){
+  if(CF==='all') return VQ;
+  return VQ.filter(r=>r.m===CF);
+}
+
+function renderVentasQ(){
+  if(!VQ||VQ.length===0) return;
+  const data=getVQFiltered();
+  const principals=data.filter(r=>r.tipo==='Principal');
+
+  // ---- Chart 1: top productos por unidades ----
+  const prodCount={};
+  data.forEach(r=>{prodCount[r.producto]=(prodCount[r.producto]||0)+1;});
+  const sorted=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  dc('vq-prod');
+  CH['vq-prod']=new Chart(document.getElementById('vq-chart-prod'),{
+    type:'bar',indexAxis:'y',
+    data:{labels:sorted.map(e=>e[0]),datasets:[{data:sorted.map(e=>e[1]),
+      backgroundColor:sorted.map((_,i)=>VQ_COLORS[i%VQ_COLORS.length]),borderRadius:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>` ${ctx.raw} unidades`}}},
+      scales:{x:{ticks:{font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{font:{size:11},color:'#6B5B4E'},grid:{display:false}}}}
+  });
+
+  // ---- Chart 2: principales por categoría ----
+  const catCount={};
+  principals.forEach(r=>{catCount[r.cat]=(catCount[r.cat]||0)+1;});
+  const catSorted=Object.entries(catCount).sort((a,b)=>b[1]-a[1]);
+  const catCols={'Lomito':'#7B1F1F','Wrap':'#A33030','Especiales':'#D4846A','Hamburguesa':'#C05050'};
+  dc('vq-cat');
+  CH['vq-cat']=new Chart(document.getElementById('vq-chart-cat'),{
+    type:'bar',
+    data:{labels:catSorted.map(e=>e[0]),datasets:[{data:catSorted.map(e=>e[1]),
+      backgroundColor:catSorted.map(e=>catCols[e[0]]||'#888'),borderRadius:3,barPercentage:0.6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:ctx=>` ${ctx.raw} unidades`}}},
+      scales:{x:{ticks:{font:{size:12},color:'#6B5B4E'},grid:{display:false}},
+        y:{ticks:{font:{size:10},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}}}}
+  });
+
+  // ---- Pie 1: composición por producto (top 10 + otros) ----
+  const pieTop=sorted.slice(0,10);
+  const otrosQty=sorted.slice(10).reduce((s,e)=>s+e[1],0);
+  const pie1vals=[...pieTop.map(e=>e[1]),...(otrosQty>0?[otrosQty]:[])];
+  const pie1lbl=[...pieTop.map(e=>e[0]),...(otrosQty>0?['Otros']:[])];
+  const pie1col=[...VQ_COLORS.slice(0,10),'#BBAA99'];
+  makePcPie('vq-pie-prod',pie1vals,pie1lbl,pie1col,'vq-pie-prod-leg');
+
+  // ---- Pie 2: composición por tipo ----
+  const tipoCount={};
+  data.forEach(r=>{tipoCount[r.tipo||'Sin tipo']=(tipoCount[r.tipo||'Sin tipo']||0)+1;});
+  const tipoCols={'Principal':'#7B1F1F','Bebida':'#1A5C96','Acompañamiento':'#27633B','Sin tipo':'#888'};
+  const tipoE=Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]);
+  makePcPie('vq-pie-tipo',tipoE.map(e=>e[1]),tipoE.map(e=>e[0]),tipoE.map(e=>tipoCols[e[0]]||'#888'),'vq-pie-tipo-leg');
+
+  // ---- Pie 3: composición por categoría ----
+  const catAllCount={};
+  data.forEach(r=>{catAllCount[r.cat||'Sin cat']=(catAllCount[r.cat||'Sin cat']||0)+1;});
+  const catColors=['#7B1F1F','#A33030','#C05050','#D4846A','#1A5C96','#27633B','#9A6010','#888','#6B5B4E','#C8964C'];
+  const catAllE=Object.entries(catAllCount).sort((a,b)=>b[1]-a[1]);
+  makePcPie('vq-pie-cat',catAllE.map(e=>e[1]),catAllE.map(e=>e[0]),catColors,'vq-pie-cat-leg');
+
+  // ---- Populate filter dropdowns ----
+  const tipos=[...new Set(VQ.map(r=>r.tipo).filter(Boolean))].sort();
+  const cats=[...new Set(VQ.map(r=>r.cat).filter(Boolean))].sort();
+  const selTipo=document.getElementById('vq-filter-tipo');
+  const selCat=document.getElementById('vq-filter-cat');
+  if(selTipo&&selTipo.options.length===1){
+    tipos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTipo.appendChild(o);});
+  }
+  if(selCat&&selCat.options.length===1){
+    cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;selCat.appendChild(o);});
+  }
+
+  renderVQTable();
+}
+
+function renderVQTable(){
+  if(!VQ||VQ.length===0) return;
+  const data=getVQFiltered();
+  const tipoFil=document.getElementById('vq-filter-tipo')?.value||'';
+  const catFil=document.getElementById('vq-filter-cat')?.value||'';
+  const sortVal=document.getElementById('vq-sort')?.value||'qty-desc';
+
+  // Aggregate
+  const agg={};
+  data.forEach(r=>{
+    if(tipoFil&&r.tipo!==tipoFil)return;
+    if(catFil&&r.cat!==catFil)return;
+    const k=r.producto;
+    if(!agg[k])agg[k]={producto:r.producto,tipo:r.tipo,cat:r.cat,qty:0};
+    agg[k].qty++;
+  });
+  let rows=Object.values(agg);
+
+  // Sort
+  if(sortVal==='qty-desc')rows.sort((a,b)=>b.qty-a.qty);
+  else if(sortVal==='qty-asc')rows.sort((a,b)=>a.qty-b.qty);
+  else if(sortVal==='name-asc')rows.sort((a,b)=>a.producto.localeCompare(b.producto));
+  else if(sortVal==='cat-asc')rows.sort((a,b)=>(a.cat||'').localeCompare(b.cat||'')||(b.qty-a.qty));
+
+  const total=rows.reduce((s,r)=>s+r.qty,0);
+
+  // Group subtotals by tipo or cat
+  const showSub=!tipoFil&&!catFil;
+  let html='';
+  let lastTipo=null;
+  let tipoQty=0,tipoRows=[];
+
+  const flush=(tipo,trows,tqty)=>{
+    if(trows.length===0)return'';
+    let h=`<tr style="background:rgba(123,31,31,0.08)"><td colspan="3" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--bordo)">${tipo}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:var(--bordo)">${tqty}</td><td style="text-align:right;font-size:12px;color:var(--tx3)">${total>0?((tqty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
+    trows.forEach(r=>{
+      h+=`<tr><td style="padding-left:24px">${r.producto}</td><td style="color:var(--tx3)">${r.tipo||'—'}</td><td style="color:var(--tx3)">${r.cat||'—'}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600">${r.qty}</td><td class="frow-pct">${total>0?((r.qty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
+    });
+    return h;
+  };
+
+  if(showSub&&sortVal==='cat-asc'){
+    // Group by categoria
+    const bycat={};
+    rows.forEach(r=>{const k=r.cat||'Sin cat';if(!bycat[k])bycat[k]=[];bycat[k].push(r);});
+    Object.entries(bycat).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([cat,crows])=>{
+      const ctot=crows.reduce((s,r)=>s+r.qty,0);
+      html+=flush(cat,crows,ctot);
+    });
+  } else if(showSub){
+    // Group by tipo
+    const byTipo={};
+    rows.forEach(r=>{const k=r.tipo||'Sin tipo';if(!byTipo[k])byTipo[k]=[];byTipo[k].push(r);});
+    ['Principal','Bebida','Acompañamiento'].concat(Object.keys(byTipo).filter(k=>!['Principal','Bebida','Acompañamiento'].includes(k))).forEach(tipo=>{
+      if(!byTipo[tipo])return;
+      const ttot=byTipo[tipo].reduce((s,r)=>s+r.qty,0);
+      html+=flush(tipo,byTipo[tipo],ttot);
+    });
+  } else {
+    rows.forEach(r=>{
+      html+=`<tr><td>${r.producto}</td><td style="color:var(--tx3)">${r.tipo||'—'}</td><td style="color:var(--tx3)">${r.cat||'—'}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600">${r.qty}</td><td class="frow-pct">${total>0?((r.qty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
+    });
+  }
+
+  document.getElementById('vq-tbody').innerHTML=html;
+  document.getElementById('vq-tfoot').innerHTML=`<tr class="total"><td colspan="3">Total</td><td style="text-align:right;font-size:16px">${total}</td><td class="frow-pct">100%</td></tr>`;
+}
+
 // ===== HELPER =====
 function set(id,txt){const el=document.getElementById(id);if(el)el.textContent=txt;}
 
@@ -1098,11 +1357,18 @@ function hideLoading(){
 async function init(){
   showLoading('Cargando datos desde Google Sheets...');
   try{
-    const res=await fetch(CSV_URL+'&t='+Date.now(),{mode:'cors',credentials:'omit'});
+    const [res, resVQ] = await Promise.all([
+      fetch(CSV_URL+'&t='+Date.now(),{mode:'cors',credentials:'omit'}),
+      fetch(VENTASQ_URL+'&t='+Date.now(),{mode:'cors',credentials:'omit'})
+    ]);
     if(!res.ok)throw new Error('HTTP '+res.status);
     const text=await res.text();
     D=parseCSV(text);
     if(D.length===0)throw new Error('Sin datos');
+    if(resVQ.ok){
+      const textVQ=await resVQ.text();
+      VQ=parseVentasQ(textVQ);
+    }
     // Detectar meses disponibles y armar botones dinámicamente
     const meses=[...new Set(D.map(r=>r.m))].sort((a,b)=>a-b);
     const nomMes={1:'Enero',2:'Febrero',3:'Marzo',4:'Abril',5:'Mayo',6:'Junio',7:'Julio',8:'Agosto',9:'Septiembre',10:'Octubre',11:'Noviembre',12:'Diciembre'};
