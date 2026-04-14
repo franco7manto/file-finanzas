@@ -306,41 +306,49 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
   <!-- ======= SECCIÓN CANTIDADES ======= -->
   <div class="divider" style="margin-top:1.5rem">Ventas en cantidades</div>
 
-  <!-- Ventas en cantidades por producto (top 15) -->
-  <div class="ccard">
-    <div class="ctitle">Unidades vendidas por producto</div>
-    <div style="position:relative;height:300px"><canvas id="vq-chart-prod" role="img" aria-label="Unidades por producto"></canvas></div>
+  <!-- Selector de fechas para VentasQ -->
+  <div class="ccard" style="margin-bottom:16px;padding:1rem 1.5rem">
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+      <div>
+        <div class="ctitle" style="margin-bottom:8px;border:none;padding:0">Año</div>
+        <div id="vq-yr-btns" style="display:flex;gap:4px"></div>
+      </div>
+      <div>
+        <div class="ctitle" style="margin-bottom:8px;border:none;padding:0">Mes</div>
+        <div id="vq-mo-btns" style="display:flex;gap:3px;flex-wrap:wrap;max-width:340px"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Ventas de principales por categoría -->
+  <!-- Gráfico unidades por mes — todos -->
   <div class="ccard">
-    <div class="ctitle">Principales — unidades por categoría</div>
-    <div style="position:relative;height:240px"><canvas id="vq-chart-cat" role="img" aria-label="Principales por categoría"></canvas></div>
+    <div class="ctitle">Unidades vendidas por mes — todos los productos</div>
+    <div style="position:relative;height:240px"><canvas id="vq-chart-mes" role="img" aria-label="Unidades por mes todos los productos"></canvas></div>
   </div>
 
-  <!-- 3 tortas de composición -->
-  <div class="cgrid3" style="margin-bottom:16px">
+  <!-- Gráfico unidades por mes — principales -->
+  <div class="ccard">
+    <div class="ctitle">Unidades vendidas por mes — productos principales</div>
+    <div style="position:relative;height:240px"><canvas id="vq-chart-mes-pri" role="img" aria-label="Unidades por mes principales"></canvas></div>
+  </div>
+
+  <!-- 2 tortas composición principales -->
+  <div class="cgrid2" style="margin-bottom:16px">
     <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Composición — por producto</div>
-      <div style="position:relative;height:180px"><canvas id="vq-pie-prod" role="img" aria-label="Composición por producto"></canvas></div>
+      <div class="ctitle">Principales — por producto</div>
+      <div style="position:relative;height:200px"><canvas id="vq-pie-prod" role="img" aria-label="Composición principales por producto"></canvas></div>
       <div id="vq-pie-prod-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
     </div>
     <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Composición — por tipo</div>
-      <div style="position:relative;height:180px"><canvas id="vq-pie-tipo" role="img" aria-label="Composición por tipo"></canvas></div>
-      <div id="vq-pie-tipo-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
-    </div>
-    <div class="ccard" style="margin-bottom:0">
-      <div class="ctitle">Composición — por categoría</div>
-      <div style="position:relative;height:180px"><canvas id="vq-pie-cat" role="img" aria-label="Composición por categoría"></canvas></div>
+      <div class="ctitle">Principales — por categoría</div>
+      <div style="position:relative;height:200px"><canvas id="vq-pie-cat" role="img" aria-label="Composición principales por categoría"></canvas></div>
       <div id="vq-pie-cat-leg" class="legrow" style="justify-content:center;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px;"></div>
     </div>
   </div>
 
   <!-- Tabla de cantidades acumuladas -->
-  <div class="ccard" style="margin-bottom:0">
+  <div class="ccard">
     <div class="ctitle" style="margin-bottom:.8rem">Cantidades acumuladas por producto</div>
-    <!-- Filtros tabla -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
       <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tx3)">Filtrar:</div>
       <select id="vq-filter-tipo" onchange="renderVQTable()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx);cursor:pointer">
@@ -358,20 +366,39 @@ footer{margin-top:3rem;padding:1rem 2rem;border-top:1px solid var(--bord);text-a
       </select>
     </div>
     <div class="flujo-wrap" style="margin-bottom:0">
-      <table class="flujo-table" id="vq-table">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Tipo</th>
-            <th>Categoría</th>
-            <th style="text-align:right">Unidades</th>
-            <th style="text-align:right">% del total</th>
-          </tr>
-        </thead>
+      <table class="flujo-table">
+        <thead><tr><th>Producto</th><th>Tipo</th><th>Categoría</th><th style="text-align:right">Unidades</th><th style="text-align:right">% del total</th></tr></thead>
         <tbody id="vq-tbody"></tbody>
         <tfoot id="vq-tfoot"></tfoot>
       </table>
     </div>
+  </div>
+
+  <!-- Gráfico de evolución con filtros -->
+  <div class="ccard" style="margin-bottom:0">
+    <div class="ctitle" style="margin-bottom:.8rem">Evolución de ventas — comparativa</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:4px">Tipo</div>
+        <select id="vql-tipo" onchange="updateVQLProductos()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx)">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:4px">Categoría</div>
+        <select id="vql-cat" onchange="updateVQLProductos()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:5px 10px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx)">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:4px">Producto (Ctrl+click = múltiple)</div>
+        <select id="vql-prod" multiple onchange="renderVQLChart()" style="font-family:'Barlow Condensed',sans-serif;font-size:12px;padding:4px 8px;border:1px solid var(--bord2);border-radius:2px;background:var(--card);color:var(--tx);height:80px;min-width:200px"></select>
+      </div>
+      <button onclick="vqlSelectAll()" style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border:1.5px solid var(--bord2);background:transparent;color:var(--tx2);border-radius:2px;cursor:pointer">Todos</button>
+      <button onclick="vqlClearAll()" style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 14px;border:1.5px solid var(--bord2);background:transparent;color:var(--tx2);border-radius:2px;cursor:pointer">Limpiar</button>
+    </div>
+    <div id="vql-legend" class="legrow" style="margin-bottom:8px;flex-wrap:wrap"></div>
+    <div style="position:relative;height:260px"><canvas id="vql-chart" role="img" aria-label="Evolución mensual comparativa"></canvas></div>
   </div>
 </div>
 
@@ -1089,6 +1116,7 @@ function renderIngresos(data){
   makePie('ing-pie-medio',[ef,tr],['Efectivo','Transferencia'],['#7B1F1F','#1A5C96'],'ing-pie-medio-leg');
   makePie('ing-pie-tipo',[tV,tOI],['Ventas','Otros ingresos'],['#27633B','#9A6010'],'ing-pie-tipo-leg');
   // Cantidades
+  initVQDateSelector();
   renderVentasQ();
 }
 
@@ -1178,157 +1206,241 @@ function makeMiniPie(canvasId,vals,labels,colors,legId){
 
 
 // ===== VENTAS EN CANTIDADES =====
-const VQ_COLORS = [
-  '#7B1F1F','#A33030','#C05050','#D4846A',
-  '#27633B','#1B5028','#3DAA6E',
-  '#1A5C96','#2C8FA0','#9A6010',
-  '#6B5B4E','#444','#888','#BBAA99','#C8964C'
-];
+const VQ_COLORS=['#7B1F1F','#A33030','#C05050','#D4846A','#8B2020','#B83030','#C87050','#9A4020','#E09070','#D06040','#27633B','#1A5C96','#9A6010','#888','#BBAA99'];
+const NOM_MES={1:'Ene',2:'Feb',3:'Mar',4:'Abr',5:'May',6:'Jun',7:'Jul',8:'Ago',9:'Sep',10:'Oct',11:'Nov',12:'Dic'};
+
+// VQ date filter state — independent from financial CF filter
+let VQ_YEARS=new Set();
+let VQ_MONTHS=new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
 
 function getVQFiltered(){
-  if(CF==='all') return VQ;
-  return VQ.filter(r=>r.m===CF);
+  if(!VQ||VQ.length===0)return[];
+  return VQ.filter(r=>{
+    const dp=r.fecha.split('/');
+    if(dp.length<3)return false;
+    const yr=dp[2].length===2?'20'+dp[2]:dp[2];
+    return VQ_YEARS.has(yr)&&VQ_MONTHS.has(r.m);
+  });
+}
+
+function vqMesKey(r){
+  const dp=r.fecha.split('/');
+  if(dp.length<3)return'';
+  const yr=dp[2].length===2?'20'+dp[2]:dp[2];
+  return yr+'-'+String(r.m).padStart(2,'0');
+}
+
+function vqBarChart(canvasId,data,onlyPrincipal){
+  // Build sorted month keys from data
+  const subset=onlyPrincipal?data.filter(r=>r.tipo==='Principal'):data;
+  const mMap={};
+  subset.forEach(r=>{const k=vqMesKey(r);if(k)mMap[k]=(mMap[k]||0)+1;});
+  const keys=Object.keys(mMap).sort();
+  const labels=keys.map(k=>{const[yr,m]=k.split('-');return NOM_MES[+m]+' '+(yr.slice(2));});
+  const vals=keys.map(k=>mMap[k]);
+  dc(canvasId.replace('vq-chart-',''));
+  // reuse id as CH key
+  const chKey=canvasId;
+  if(CH[chKey])try{CH[chKey].destroy();}catch(e){}
+  CH[chKey]=new Chart(document.getElementById(canvasId),{
+    type:'bar',
+    data:{labels,datasets:[{data:vals,backgroundColor:'#7B1F1F',borderRadius:3,barPercentage:0.7}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw+' unidades'}}},
+      scales:{
+        x:{ticks:{autoSkip:false,font:{size:10},color:'#6B5B4E',maxRotation:45},grid:{display:false}},
+        y:{ticks:{font:{size:10},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
+}
+
+function vqPieTop3(canvasId,legId,entries,colors){
+  // entries = [[label,val],...] sorted desc
+  const top3=entries.slice(0,3);
+  const rest=entries.slice(3);
+  const restVal=rest.reduce((s,e)=>s+e[1],0);
+  const vals=[...top3.map(e=>e[1]),...(restVal>0?[restVal]:[])];
+  const lbls=[...top3.map(e=>e[0]),...(restVal>0?['Otros']:[])];
+  const cols=[...colors.slice(0,3),...(restVal>0?['#CCBBAA']:[])];
+  if(CH[canvasId])try{CH[canvasId].destroy();}catch(e){}
+  CH[canvasId]=new Chart(document.getElementById(canvasId),{
+    type:'doughnut',
+    data:{labels:lbls,datasets:[{data:vals,backgroundColor:cols,borderWidth:2,borderColor:'#F8F4ED'}]},
+    options:{responsive:true,maintainAspectRatio:false,rotation:-90,
+      plugins:{legend:{display:false}},cutout:'55%'}
+  });
+  const tot=vals.reduce((a,b)=>a+b,0);
+  // Only show top 3 in legend
+  document.getElementById(legId).innerHTML=top3.map((e,i)=>
+    `<span class="legitem"><span class="legdot" style="background:${cols[i]}"></span>${e[0]} ${tot>0?Math.round(e[1]/tot*100):0}%</span>`
+  ).join('');
 }
 
 function renderVentasQ(){
-  if(!VQ||VQ.length===0) return;
+  if(!VQ||VQ.length===0)return;
   const data=getVQFiltered();
+
+  // Bar charts
+  vqBarChart('vq-chart-mes',data,false);
+  vqBarChart('vq-chart-mes-pri',data,true);
+
+  // Pie 1: principals by product
   const principals=data.filter(r=>r.tipo==='Principal');
-
-  // ---- Chart 1: top productos por unidades ----
   const prodCount={};
-  data.forEach(r=>{prodCount[r.producto]=(prodCount[r.producto]||0)+1;});
-  const sorted=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]).slice(0,15);
-  dc('vq-prod');
-  CH['vq-prod']=new Chart(document.getElementById('vq-chart-prod'),{
-    type:'bar',indexAxis:'y',
-    data:{labels:sorted.map(e=>e[0]),datasets:[{data:sorted.map(e=>e[1]),
-      backgroundColor:sorted.map((_,i)=>VQ_COLORS[i%VQ_COLORS.length]),borderRadius:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>` ${ctx.raw} unidades`}}},
-      scales:{x:{ticks:{font:{size:9},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}},
-        y:{ticks:{font:{size:11},color:'#6B5B4E'},grid:{display:false}}}}
-  });
+  principals.forEach(r=>{prodCount[r.producto]=(prodCount[r.producto]||0)+1;});
+  const prodEntries=Object.entries(prodCount).sort((a,b)=>b[1]-a[1]);
+  vqPieTop3('vq-pie-prod','vq-pie-prod-leg',prodEntries,VQ_COLORS);
 
-  // ---- Chart 2: principales por categoría ----
+  // Pie 2: principals by category
   const catCount={};
-  principals.forEach(r=>{catCount[r.cat]=(catCount[r.cat]||0)+1;});
-  const catSorted=Object.entries(catCount).sort((a,b)=>b[1]-a[1]);
-  const catCols={'Lomito':'#7B1F1F','Wrap':'#A33030','Especiales':'#D4846A','Hamburguesa':'#C05050'};
-  dc('vq-cat');
-  CH['vq-cat']=new Chart(document.getElementById('vq-chart-cat'),{
-    type:'bar',
-    data:{labels:catSorted.map(e=>e[0]),datasets:[{data:catSorted.map(e=>e[1]),
-      backgroundColor:catSorted.map(e=>catCols[e[0]]||'#888'),borderRadius:3,barPercentage:0.6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
-      tooltip:{callbacks:{label:ctx=>` ${ctx.raw} unidades`}}},
-      scales:{x:{ticks:{font:{size:12},color:'#6B5B4E'},grid:{display:false}},
-        y:{ticks:{font:{size:10},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.04)'}}}}
-  });
+  principals.forEach(r=>{catCount[r.cat||'Otros']=(catCount[r.cat||'Otros']||0)+1;});
+  const catEntries=Object.entries(catCount).sort((a,b)=>b[1]-a[1]);
+  const catColors=['#7B1F1F','#A33030','#D4846A','#C05050','#888'];
+  vqPieTop3('vq-pie-cat','vq-pie-cat-leg',catEntries,catColors);
 
-  // ---- Pie 1: composición por producto (top 10 + otros) ----
-  const pieTop=sorted.slice(0,10);
-  const otrosQty=sorted.slice(10).reduce((s,e)=>s+e[1],0);
-  const pie1vals=[...pieTop.map(e=>e[1]),...(otrosQty>0?[otrosQty]:[])];
-  const pie1lbl=[...pieTop.map(e=>e[0]),...(otrosQty>0?['Otros']:[])];
-  const pie1col=[...VQ_COLORS.slice(0,10),'#BBAA99'];
-  makePcPie('vq-pie-prod',pie1vals,pie1lbl,pie1col,'vq-pie-prod-leg');
-
-  // ---- Pie 2: composición por tipo ----
-  const tipoCount={};
-  data.forEach(r=>{tipoCount[r.tipo||'Sin tipo']=(tipoCount[r.tipo||'Sin tipo']||0)+1;});
-  const tipoCols={'Principal':'#7B1F1F','Bebida':'#1A5C96','Acompañamiento':'#27633B','Sin tipo':'#888'};
-  const tipoE=Object.entries(tipoCount).sort((a,b)=>b[1]-a[1]);
-  makePcPie('vq-pie-tipo',tipoE.map(e=>e[1]),tipoE.map(e=>e[0]),tipoE.map(e=>tipoCols[e[0]]||'#888'),'vq-pie-tipo-leg');
-
-  // ---- Pie 3: composición por categoría ----
-  const catAllCount={};
-  data.forEach(r=>{catAllCount[r.cat||'Sin cat']=(catAllCount[r.cat||'Sin cat']||0)+1;});
-  const catColors=['#7B1F1F','#A33030','#C05050','#D4846A','#1A5C96','#27633B','#9A6010','#888','#6B5B4E','#C8964C'];
-  const catAllE=Object.entries(catAllCount).sort((a,b)=>b[1]-a[1]);
-  makePcPie('vq-pie-cat',catAllE.map(e=>e[1]),catAllE.map(e=>e[0]),catColors,'vq-pie-cat-leg');
-
-  // ---- Populate filter dropdowns ----
+  // Populate filter dropdowns
   const tipos=[...new Set(VQ.map(r=>r.tipo).filter(Boolean))].sort();
   const cats=[...new Set(VQ.map(r=>r.cat).filter(Boolean))].sort();
-  const selTipo=document.getElementById('vq-filter-tipo');
-  const selCat=document.getElementById('vq-filter-cat');
-  if(selTipo&&selTipo.options.length===1){
-    tipos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTipo.appendChild(o);});
-  }
-  if(selCat&&selCat.options.length===1){
-    cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;selCat.appendChild(o);});
-  }
+  ['vq-filter-tipo','vql-tipo'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(sel&&sel.options.length===1)tipos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o);});
+  });
+  ['vq-filter-cat','vql-cat'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(sel&&sel.options.length===1)cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  });
 
+  updateVQLProductos();
   renderVQTable();
 }
 
-function renderVQTable(){
-  if(!VQ||VQ.length===0) return;
-  const data=getVQFiltered();
-  const tipoFil=document.getElementById('vq-filter-tipo')?.value||'';
-  const catFil=document.getElementById('vq-filter-cat')?.value||'';
-  const sortVal=document.getElementById('vq-sort')?.value||'qty-desc';
+function initVQDateSelector(){
+  if(!VQ||VQ.length===0)return;
+  // Collect all years from data
+  const yrs=[...new Set(VQ.map(r=>{const dp=r.fecha.split('/');return dp[2]?.(dp[2].length===2?'20'+dp[2]:dp[2]);}))].filter(Boolean).sort();
+  yrs.forEach(yr=>VQ_YEARS.add(yr));
 
-  // Aggregate
-  const agg={};
-  data.forEach(r=>{
-    if(tipoFil&&r.tipo!==tipoFil)return;
-    if(catFil&&r.cat!==catFil)return;
-    const k=r.producto;
-    if(!agg[k])agg[k]={producto:r.producto,tipo:r.tipo,cat:r.cat,qty:0};
-    agg[k].qty++;
-  });
-  let rows=Object.values(agg);
-
-  // Sort
-  if(sortVal==='qty-desc')rows.sort((a,b)=>b.qty-a.qty);
-  else if(sortVal==='qty-asc')rows.sort((a,b)=>a.qty-b.qty);
-  else if(sortVal==='name-asc')rows.sort((a,b)=>a.producto.localeCompare(b.producto));
-  else if(sortVal==='cat-asc')rows.sort((a,b)=>(a.cat||'').localeCompare(b.cat||'')||(b.qty-a.qty));
-
-  const total=rows.reduce((s,r)=>s+r.qty,0);
-
-  // Group subtotals by tipo or cat
-  const showSub=!tipoFil&&!catFil;
-  let html='';
-  let lastTipo=null;
-  let tipoQty=0,tipoRows=[];
-
-  const flush=(tipo,trows,tqty)=>{
-    if(trows.length===0)return'';
-    let h=`<tr style="background:rgba(123,31,31,0.08)"><td colspan="3" style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--bordo)">${tipo}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:var(--bordo)">${tqty}</td><td style="text-align:right;font-size:12px;color:var(--tx3)">${total>0?((tqty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
-    trows.forEach(r=>{
-      h+=`<tr><td style="padding-left:24px">${r.producto}</td><td style="color:var(--tx3)">${r.tipo||'—'}</td><td style="color:var(--tx3)">${r.cat||'—'}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600">${r.qty}</td><td class="frow-pct">${total>0?((r.qty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
-    });
-    return h;
-  };
-
-  if(showSub&&sortVal==='cat-asc'){
-    // Group by categoria
-    const bycat={};
-    rows.forEach(r=>{const k=r.cat||'Sin cat';if(!bycat[k])bycat[k]=[];bycat[k].push(r);});
-    Object.entries(bycat).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([cat,crows])=>{
-      const ctot=crows.reduce((s,r)=>s+r.qty,0);
-      html+=flush(cat,crows,ctot);
-    });
-  } else if(showSub){
-    // Group by tipo
-    const byTipo={};
-    rows.forEach(r=>{const k=r.tipo||'Sin tipo';if(!byTipo[k])byTipo[k]=[];byTipo[k].push(r);});
-    ['Principal','Bebida','Acompañamiento'].concat(Object.keys(byTipo).filter(k=>!['Principal','Bebida','Acompañamiento'].includes(k))).forEach(tipo=>{
-      if(!byTipo[tipo])return;
-      const ttot=byTipo[tipo].reduce((s,r)=>s+r.qty,0);
-      html+=flush(tipo,byTipo[tipo],ttot);
-    });
-  } else {
-    rows.forEach(r=>{
-      html+=`<tr><td>${r.producto}</td><td style="color:var(--tx3)">${r.tipo||'—'}</td><td style="color:var(--tx3)">${r.cat||'—'}</td><td style="text-align:right;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600">${r.qty}</td><td class="frow-pct">${total>0?((r.qty/total)*100).toFixed(1)+'%':'—'}</td></tr>`;
+  // Year buttons
+  const yrContainer=document.getElementById('vq-yr-btns');
+  if(yrContainer&&!yrContainer.dataset.init){
+    yrContainer.dataset.init='1';
+    yrs.forEach(yr=>{
+      const btn=document.createElement('button');
+      btn.textContent=yr;
+      btn.style.cssText='font-family:"Barlow Condensed",sans-serif;font-size:11px;font-weight:700;padding:4px 12px;border:1.5px solid var(--bordo);border-radius:2px;background:var(--bordo);color:#fff;cursor:pointer;letter-spacing:1px';
+      btn.onclick=()=>{
+        if(VQ_YEARS.has(yr)&&VQ_YEARS.size>1){VQ_YEARS.delete(yr);btn.style.background='transparent';btn.style.color='var(--tx2)';}
+        else{VQ_YEARS.add(yr);btn.style.background='var(--bordo)';btn.style.color='#fff';}
+        renderVentasQ();
+      };
+      yrContainer.appendChild(btn);
     });
   }
 
-  document.getElementById('vq-tbody').innerHTML=html;
-  document.getElementById('vq-tfoot').innerHTML=`<tr class="total"><td colspan="3">Total</td><td style="text-align:right;font-size:16px">${total}</td><td class="frow-pct">100%</td></tr>`;
+  // Month buttons
+  const moContainer=document.getElementById('vq-mo-btns');
+  if(moContainer&&!moContainer.dataset.init){
+    moContainer.dataset.init='1';
+    for(let m=1;m<=12;m++){
+      const btn=document.createElement('button');
+      btn.textContent=NOM_MES[m];
+      btn.dataset.mo=m;
+      btn.style.cssText='font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;padding:3px 8px;border:1.5px solid var(--bordo);border-radius:2px;background:var(--bordo);color:#fff;cursor:pointer;letter-spacing:1px';
+      btn.onclick=()=>{
+        if(VQ_MONTHS.has(m)&&VQ_MONTHS.size>1){VQ_MONTHS.delete(m);btn.style.background='transparent';btn.style.color='var(--tx2)';}
+        else{VQ_MONTHS.add(m);btn.style.background='var(--bordo)';btn.style.color='#fff';}
+        renderVentasQ();
+      };
+      moContainer.appendChild(btn);
+    }
+  }
+}
+
+function updateVQLProductos(){
+  const tipoF=document.getElementById('vql-tipo')?.value||'';
+  const catF=document.getElementById('vql-cat')?.value||'';
+  const sel=document.getElementById('vql-prod');
+  if(!sel)return;
+  const prev=new Set([...sel.selectedOptions].map(o=>o.value));
+  const prods=[...new Set(VQ.filter(r=>(tipoF?r.tipo===tipoF:true)&&(catF?r.cat===catF:true)).map(r=>r.producto))].sort();
+  sel.innerHTML=prods.map(p=>`<option value="${p}"${prev.has(p)?' selected':''}>${p}</option>`).join('');
+  renderVQLChart();
+}
+
+function vqlSelectAll(){
+  const sel=document.getElementById('vql-prod');
+  if(!sel)return;
+  [...sel.options].forEach(o=>o.selected=true);
+  renderVQLChart();
+}
+function vqlClearAll(){
+  const sel=document.getElementById('vql-prod');
+  if(!sel)return;
+  [...sel.options].forEach(o=>o.selected=false);
+  renderVQLChart();
+}
+
+function renderVQLChart(){
+  const tipoF=document.getElementById('vql-tipo')?.value||'';
+  const catF=document.getElementById('vql-cat')?.value||'';
+  const sel=document.getElementById('vql-prod');
+  const selectedProds=sel?[...sel.selectedOptions].map(o=>o.value):[];
+  const data=getVQFiltered();
+
+  // Build month keys from filtered data
+  const allKeys=[...new Set(data.map(r=>vqMesKey(r)).filter(Boolean))].sort();
+  const labels=allKeys.map(k=>{const[yr,m]=k.split('-');return NOM_MES[+m]+' '+(yr.slice(2));});
+
+  // Determine series to plot
+  let series=[];
+  if(selectedProds.length>0){
+    // One line per selected product
+    series=selectedProds.map((p,i)=>({
+      label:p,
+      color:VQ_COLORS[i%VQ_COLORS.length],
+      filter:r=>r.producto===p
+    }));
+  } else if(tipoF){
+    // One line per category within tipo
+    const cats=[...new Set(data.filter(r=>r.tipo===tipoF&&(catF?r.cat===catF:true)).map(r=>r.cat||'Sin cat'))].sort();
+    series=cats.map((c,i)=>({label:c,color:VQ_COLORS[i%VQ_COLORS.length],filter:r=>r.tipo===tipoF&&(r.cat||'Sin cat')===c}));
+    if(series.length===0)series=[{label:tipoF,color:VQ_COLORS[0],filter:r=>r.tipo===tipoF}];
+  } else if(catF){
+    series=[{label:catF,color:VQ_COLORS[0],filter:r=>r.cat===catF}];
+  } else {
+    // Default: one line total
+    series=[{label:'Total',color:'#7B1F1F',filter:()=>true}];
+  }
+
+  const datasets=series.map(s=>({
+    label:s.label,
+    data:allKeys.map(k=>data.filter(r=>vqMesKey(r)===k&&s.filter(r)).length),
+    borderColor:s.color,
+    backgroundColor:s.color+'18',
+    fill:series.length===1,
+    borderWidth:2,
+    pointRadius:3,
+    pointBackgroundColor:s.color,
+    tension:0.35
+  }));
+
+  // Legend
+  const legEl=document.getElementById('vql-legend');
+  if(legEl)legEl.innerHTML=series.map(s=>`<span class="legitem"><span class="legdot" style="background:${s.color}"></span>${s.label}</span>`).join('');
+
+  if(CH['vql'])try{CH['vql'].destroy();}catch(e){}
+  CH['vql']=new Chart(document.getElementById('vql-chart'),{
+    type:'line',
+    data:{labels,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.raw} uds`}}},
+      scales:{
+        x:{ticks:{autoSkip:false,font:{size:10},color:'#6B5B4E',maxRotation:45},grid:{display:false}},
+        y:{ticks:{font:{size:10},color:'#9E8E82'},grid:{color:'rgba(0,0,0,0.05)'}}
+      }
+    }
+  });
 }
 
 // ===== HELPER =====
