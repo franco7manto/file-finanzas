@@ -1218,7 +1218,7 @@ function getVQFiltered(){
   return VQ.filter(r=>{
     const dp=r.fecha.split('/');
     if(dp.length<3)return false;
-    const yr=dp[2].length===2?'20'+dp[2]:dp[2];
+    const yr=dp.length>=3?(dp[2].length===2?'20'+dp[2]:dp[2]):null;if(!yr)return false;
     return VQ_YEARS.has(yr)&&VQ_MONTHS.has(r.m);
   });
 }
@@ -1226,7 +1226,7 @@ function getVQFiltered(){
 function vqMesKey(r){
   const dp=r.fecha.split('/');
   if(dp.length<3)return'';
-  const yr=dp[2].length===2?'20'+dp[2]:dp[2];
+  const yr=dp.length>=3?(dp[2].length===2?'20'+dp[2]:dp[2]):null;if(!yr)return false;
   return yr+'-'+String(r.m).padStart(2,'0');
 }
 
@@ -1318,7 +1318,7 @@ function renderVentasQ(){
 function initVQDateSelector(){
   if(!VQ||VQ.length===0)return;
   // Collect all years from data
-  const yrs=[...new Set(VQ.map(r=>{const dp=r.fecha.split('/');return dp[2]?.(dp[2].length===2?'20'+dp[2]:dp[2]);}))].filter(Boolean).sort();
+  const yrs=[...new Set(VQ.map(r=>{const dp=r.fecha.split('/');return dp[2]?(dp[2].length===2?'20'+dp[2]:dp[2]):null;}))].filter(Boolean).sort();
   yrs.forEach(yr=>VQ_YEARS.add(yr));
 
   // Year buttons
